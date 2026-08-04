@@ -7,14 +7,16 @@ mobile app can pin a version and we can evolve the contract without breaking ins
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import pool
-from app.routers import health, properties, rules
+from app.routers import health, properties, rules, scans
 from app.rules.rulebook import load_rulebook
+from app.storage import init_storage
 
 API_PREFIX = "/v1"
 
@@ -33,6 +35,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Fail fast on a rulebook that cannot load. Every score cites it, so a deployment pinned to a
     # version that is not present would serve findings it cannot justify.
     load_rulebook(settings.rulebook_version)
+    init_storage(Path(settings.photo_storage_root))
 
     if settings.database_url:
         await pool.init_pool(
@@ -75,6 +78,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(properties.router, prefix=API_PREFIX)
     app.include_router(rules.router, prefix=API_PREFIX)
+    app.include_router(scans.router, prefix=API_PREFIX)
 
     return app
 

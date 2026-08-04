@@ -103,3 +103,30 @@ async def create_property(
         lng,
         lat,
     )
+
+
+@pytest.fixture
+def db_exec():
+    """Run a statement as the owning role and return its first value.
+
+    Tests use this to plant model findings that the inference worker will produce in Step 6, so the
+    scan flow can be exercised end to end before a model exists.
+    """
+
+    def run(sql: str, *args):
+        async def go():
+            conn = await asyncpg.connect(TEST_DSN)
+            try:
+                return await conn.fetchval(sql, *args)
+            finally:
+                await conn.close()
+
+        return asyncio.run(go())
+
+    return run
+
+
+@pytest.fixture
+def db_check(db_exec):
+    """Read one value back from the database, outside the API."""
+    return db_exec

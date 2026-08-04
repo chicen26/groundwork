@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""
     supabase_jwt_audience: str = "authenticated"
 
+    # Where sanitised photographs are written. Local filesystem today; the storage interface in
+    # app/storage.py is small enough that a Supabase Storage backend drops in without touching a
+    # handler.
+    photo_storage_root: str = "./var/photos"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

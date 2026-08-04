@@ -13,6 +13,10 @@ dependencies = [
     # builds is nothing. Layer imports must not depend on how Python was installed.
     "certifi>=2024.8.30",
     "pyjwt>=2.9",
+    # Image decoding for EXIF stripping on upload.
+    "pillow>=11.0",
+    # FastAPI needs this to parse multipart photo uploads.
+    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]
@@ -22,6 +26,8 @@ dev = [
     # Starlette's TestClient uses httpx2; httpx 0.x is deprecated for this path.
     "httpx2>=0.1",
     "ruff>=0.7",
+    # Builds JPEGs carrying real EXIF so the stripping test proves something.
+    "piexif>=1.1.3",
 ]
 
 [build-system]
