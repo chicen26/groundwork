@@ -69,6 +69,24 @@ jobs:
             exit 1
           fi
 
+  ml:
+    name: ML — dataset and leakage guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        # Dataset assembly needs nothing heavy on purpose: the leakage guards must run on every
+        # push, and waiting on torch would mean they eventually would not.
+        run: pip install pytest
+
+      - name: Test
+        run: python -m pytest ml/tests
+
   mobile:
     name: Mobile — typecheck
     runs-on: ubuntu-latest

@@ -20,6 +20,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Torch and Ultralytics are large and only the inference worker needs them, so the API image and
+# the test suite stay light.
+inference = [
+    "ultralytics>=8.3",
+]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

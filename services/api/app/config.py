@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     # handler.
     photo_storage_root: str = "./var/photos"
 
+    # Path to the fine-tuned detector weights. Empty means no model is configured: inference
+    # jobs then fail honestly rather than reporting a clean yard nobody earned, which is what
+    # app/inference/detector.py's NullDetector exists to guarantee.
+    detector_weights: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

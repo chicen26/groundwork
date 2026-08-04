@@ -1,0 +1,118 @@
+{
+  "version": "1.0",
+  "description": "The six hazard classes Groundwork's detector is trained on. This file is the single source of truth: the database enum, the rulebook triggers, and the training data.yaml all have to agree with it, and a test fails if they drift.",
+  "written_before_labeling": true,
+  "classes": [
+    {
+      "index": 0,
+      "name": "dead_vegetation",
+      "label": "Dead vegetation",
+      "definition": "Standing or fallen plant material that is visibly dead or fully cured: brown/grey shrubs with no green growth, dried annual grass, dead branches still attached to a living plant, accumulated leaf litter on the ground.",
+      "include": [
+        "A shrub that is brown throughout with no living foliage",
+        "Cured annual grass, straw-coloured, in a mowed or unmowed area",
+        "Dead branches within an otherwise living shrub or tree",
+        "Leaf and needle litter accumulated on the ground within 30 feet of a structure"
+      ],
+      "exclude": [
+        "A deciduous plant that is merely dormant and has visible live buds or twig flexibility",
+        "Bare soil or gravel with no plant material",
+        "Cut and bagged green waste awaiting collection",
+        "Brown mulch, which is combustible_mulch_z0 when in the first five feet"
+      ],
+      "source": "PRC 4291(a)(1); CSFS Home Ignition Zone guide",
+      "notes": "The commonest failure is confusing cured grass with bare dry soil. If individual stems are visible, it is vegetation."
+    },
+    {
+      "index": 1,
+      "name": "veg_touching_structure",
+      "label": "Vegetation touching the structure",
+      "definition": "Living or dead vegetation in physical contact with an exterior wall, eave, window, door frame, or roof edge.",
+      "include": [
+        "A shrub whose foliage presses against siding",
+        "A vine growing on or up a wall",
+        "Tree foliage resting on an eave or gutter",
+        "A hedge planted flush to the wall with no visible gap"
+      ],
+      "exclude": [
+        "A plant near the wall with visible daylight between it and the siding — that is a Zone 0 setback question, not contact",
+        "Vegetation touching a detached fence rather than the house",
+        "Potted plants on a patio not against the wall"
+      ],
+      "source": "IBHS Wildfire Prepared Home; draft Zone 0",
+      "notes": "Contact is the whole criterion. When contact is ambiguous from the angle, do not label it — a false positive here reads as an accusation."
+    },
+    {
+      "index": 2,
+      "name": "overhanging_limbs",
+      "label": "Overhanging limbs",
+      "definition": "Tree limbs extending over a roof surface, chimney, or stovepipe outlet.",
+      "include": [
+        "A branch whose vertical projection falls on the roof plane",
+        "Limbs above or adjacent to a chimney outlet",
+        "Branches over a deck roof or porch cover attached to the house"
+      ],
+      "exclude": [
+        "Trees beside a structure whose limbs stop short of the roofline",
+        "Limbs over a detached shed or over the street",
+        "Limbs over a driveway or lawn with no structure beneath"
+      ],
+      "source": "PRC 4291(a)(4)",
+      "notes": "Judge from the projection, not apparent overlap: a telephoto angle makes a distant tree look like it sits on the roof."
+    },
+    {
+      "index": 3,
+      "name": "combustible_mulch_z0",
+      "label": "Combustible mulch in the first five feet",
+      "definition": "Bark, wood chip, or other combustible ground cover within roughly five feet of an exterior wall.",
+      "include": [
+        "Shredded bark or wood chips in a planting bed against the house",
+        "Rubber mulch abutting the foundation",
+        "Straw or pine-needle ground cover in the same band"
+      ],
+      "exclude": [
+        "Gravel, decomposed granite, stone, or bare soil",
+        "Bark mulch clearly beyond the first five feet",
+        "Loose leaf litter, which is dead_vegetation"
+      ],
+      "source": "Draft Zone 0 regulation (pending final adoption)",
+      "notes": "The five-foot band is judged relative to visible reference objects — a standard door is about 3 feet wide, a typical siding course 6-8 inches. Label only when the band is confidently in frame."
+    },
+    {
+      "index": 4,
+      "name": "attached_wood_fence",
+      "label": "Combustible fence attached to the house",
+      "definition": "A wooden fence, gate, trellis, or lattice that physically meets an exterior wall.",
+      "include": [
+        "A wood fence terminating at the siding",
+        "A wooden gate hinged to the structure",
+        "Lattice or trellis fixed to the wall and continuous with a fence"
+      ],
+      "exclude": [
+        "A wooden fence that stops short of the house, or meets a metal post first",
+        "Metal, vinyl, or masonry fencing regardless of where it attaches",
+        "Freestanding lattice screens not continuous with a fence"
+      ],
+      "source": "Draft Zone 0 regulation (pending final adoption)",
+      "notes": "The junction must be visible in the frame. A fence running out of shot toward the house is not a label."
+    },
+    {
+      "index": 5,
+      "name": "combustibles_under_deck",
+      "label": "Combustible material under a deck",
+      "definition": "Stored or accumulated combustible material in the space beneath a deck, porch, or raised floor.",
+      "include": [
+        "Firewood, lumber, or cardboard stored under a deck",
+        "Outdoor furniture or plastic bins stowed underneath",
+        "Deep leaf litter accumulated in the under-deck space"
+      ],
+      "exclude": [
+        "An enclosed, skirted under-deck space with nothing visible inside",
+        "Material beside a deck rather than beneath it",
+        "Ground-level patios with no space underneath"
+      ],
+      "source": "CSFS Home Ignition Zone guide; IBHS Wildfire Prepared Home",
+      "notes": "Requires seeing into the space. A dark under-deck area where nothing is discernible is not labelled — absence of evidence is not evidence of clearance."
+    }
+  ]
+}

@@ -20,9 +20,15 @@ dependencies are added.
 | PostGIS | Spatial types and point-in-polygon queries | GPL-2.0 (server-side; not linked into our code) |
 | PyJWT | Verifying Supabase-issued tokens | MIT |
 | certifi | CA bundle for outbound HTTPS | MPL-2.0 |
+| Pillow | Image decoding and EXIF stripping | MIT-CMU |
+| Ultralytics YOLO11 | Architecture we fine-tune; training and inference runtime | AGPL-3.0 |
 
-_Additional entries are appended as each step lands (PostGIS, Supabase client, Ultralytics YOLO11,
-turf.js, WeasyPrint/ReportLab)._
+_Additional entries are appended as each step lands (Supabase client, turf.js, WeasyPrint/ReportLab)._
+
+**On Ultralytics' licence.** YOLO11 is AGPL-3.0. Groundwork is a non-commercial student project and
+its source is public, which is consistent with those terms. The architecture and training framework
+are theirs; the dataset, the class taxonomy, the labelling, the trained weights, and every
+evaluation artefact are ours.
 
 ## Datasets
 
