@@ -1,0 +1,85 @@
+{
+  "version": "2026.08",
+  "note": "Local programmes and contacts for the CA-10 corridor. Every entry names its agency and links to that agency's own page rather than restating terms we would then have to keep in sync. All are in the verify-before-launch register: programme funding and deadlines change annually, and sending someone to a closed programme wastes a trip.",
+  "resources": [
+    {
+      "key": "diablo_fsc_chipping",
+      "agency": "Diablo Fire Safe Council",
+      "name": "Free chipping programme",
+      "type": "chipping",
+      "summary": "Chips brush and branches you have already cut and stacked at the roadside, at no cost to the homeowner.",
+      "applies_to_districts": [],
+      "url": "https://diablofiresafe.org/",
+      "phone": null,
+      "verify_before_launch": true
+    },
+    {
+      "key": "diablo_fsc_cost_share",
+      "agency": "Diablo Fire Safe Council",
+      "name": "Defensible space cost-share",
+      "type": "cost_share",
+      "summary": "Shares the cost of larger defensible-space work. Amounts and eligibility vary by year and by funding round — check the current round before planning around it.",
+      "applies_to_districts": [],
+      "url": "https://diablofiresafe.org/",
+      "phone": null,
+      "verify_before_launch": true
+    },
+    {
+      "key": "mofd_chipping",
+      "agency": "Moraga-Orinda Fire District",
+      "name": "Chipping and vent mesh",
+      "type": "chipping",
+      "summary": "District chipping days, and ember-resistant vent mesh for residents.",
+      "applies_to_districts": ["MOFD", "Moraga-Orinda Fire District"],
+      "url": "https://www.mofd.org/",
+      "phone": null,
+      "verify_before_launch": true
+    },
+    {
+      "key": "mofd_vent_mesh",
+      "agency": "Moraga-Orinda Fire District",
+      "name": "Ember-resistant vent mesh",
+      "type": "cost_share",
+      "summary": "Mesh for retrofitting attic and crawlspace vents, for district residents.",
+      "applies_to_districts": ["MOFD", "Moraga-Orinda Fire District"],
+      "url": "https://www.mofd.org/",
+      "phone": null,
+      "verify_before_launch": true
+    },
+    {
+      "key": "srvfpd_inspection",
+      "agency": "San Ramon Valley Fire Protection District",
+      "name": "Defensible space inspection",
+      "type": "inspection",
+      "summary": "The district's own exterior hazard inspection. An official inspection, unlike this app — if you want a determination rather than guidance, this is where to get one.",
+      "applies_to_districts": ["SRVFPD", "San Ramon Valley Fire Protection District"],
+      "url": "https://www.firedepartment.org/",
+      "phone": "(925) 838-6600",
+      "verify_before_launch": true
+    },
+    {
+      "key": "confire_weed_abatement",
+      "agency": "Contra Costa County Fire Protection District",
+      "name": "Weed abatement programme",
+      "type": "inspection",
+      "summary": "Annual exterior hazard notices and abatement deadlines. Deadlines move each year — check the current one rather than assuming last year's date.",
+      "applies_to_districts": ["Con Fire", "Contra Costa County Fire Protection District"],
+      "url": "https://www.cccfpd.org/",
+      "phone": null,
+      "verify_before_launch": true
+    },
+    {
+      "key": "genasys_evacuation_zones",
+      "agency": "Genasys Protect",
+      "name": "Look up your evacuation zone",
+      "type": "lookup",
+      "summary": "Your official evacuation zone and its current status, from the agencies that issue evacuation orders.",
+      "applies_to_districts": [],
+      "url": "https://protect.genasys.com/",
+      "phone": null,
+      "external_only": true,
+      "disclaimer": "Groundwork provides no evacuation guidance of any kind. This is a link to the official source; follow your fire agency and local law enforcement during an incident.",
+      "verify_before_launch": true
+    }
+  ]
+}
