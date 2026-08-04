@@ -89,3 +89,22 @@ being accepted.
 
 **Why.** Building the scan flow should not require a Supabase project, but a convenience header that
 could survive into a deployment is a hole. Both failure modes resolve toward refusing access.
+
+---
+
+### D9 — Areas and rebate figures are computed server-side, in Decimal · Aug 5, 2026
+
+**Decision.** The client draws the lawn polygon; the server computes its geodesic area with PostGIS
+and every rebate figure with `Decimal`, rounding **down** to the cent. Where the water utility could
+not be determined, all three programmes are shown with their agencies named rather than one being
+guessed.
+
+**Why.** People budget projects around these numbers. A float rounding error or a client-side area
+computed on a slow phone becomes a promise we cannot keep. Rounding down matches how a utility pays
+— for the square feet actually converted — and showing three named agencies is more useful than one
+confident wrong rate, particularly in Walnut Creek and San Ramon where the city is split between two
+utilities.
+
+Every estimate carries the pre-approval warning, because work started before the inspection is
+ineligible no matter how good the finished yard is.
+

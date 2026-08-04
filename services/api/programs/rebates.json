@@ -1,0 +1,64 @@
+{
+  "version": "2026.08",
+  "note": "Lawn-replacement rebate terms for the utilities serving the CA-10 corridor. Every figure here is in the verify-before-launch register and must be re-checked against each utility's own page before the submission video — rebate programs change rates, caps, and eligibility without notice, and a stale number on screen is money we promised someone.",
+  "universal_warning": "Apply and get approval BEFORE you remove anything. Every one of these programs requires a pre-conversion inspection, and work started early is not eligible — the rebate is void even if the finished yard would have qualified.",
+  "programs": [
+    {
+      "key": "ebmud_lawn_conversion",
+      "agency": "EBMUD",
+      "agency_full": "East Bay Municipal Utility District",
+      "name": "Lawn Conversion Rebate",
+      "type": "rebate",
+      "rate_per_sqft": "1.00",
+      "cap_usd": "2000.00",
+      "minimum_sqft": 100,
+      "url": "https://www.ebmud.com/water/conservation-and-rebates/",
+      "tiers": [
+        {
+          "key": "standard",
+          "label": "Standard",
+          "rate_per_sqft": "1.00",
+          "requirements": "Replace lawn with low-water plants or permeable hardscape."
+        },
+        {
+          "key": "super",
+          "label": "Super Rebate",
+          "rate_per_sqft": "2.00",
+          "requirements": "Higher rate where the new planting meets the native-plant requirement. Check current eligibility with EBMUD before assuming this rate."
+        }
+      ],
+      "verify_before_launch": true
+    },
+    {
+      "key": "ccwd_lawn_conversion",
+      "agency": "CCWD",
+      "agency_full": "Contra Costa Water District",
+      "name": "Lawn Replacement Rebate",
+      "type": "rebate",
+      "rate_per_sqft": "1.00",
+      "cap_usd": "2000.00",
+      "minimum_sqft": 100,
+      "url": "https://www.ccwater.com/191/Rebates",
+      "tiers": [],
+      "verify_before_launch": true
+    },
+    {
+      "key": "dsrsd_lawn_conversion",
+      "agency": "DSRSD",
+      "agency_full": "Dublin San Ramon Services District",
+      "name": "Lawn Conversion Rebate",
+      "type": "rebate",
+      "rate_per_sqft": "2.00",
+      "cap_usd": "3000.00",
+      "minimum_sqft": 100,
+      "url": "https://www.dsrsd.com/services/conservation/rebates",
+      "tiers": [],
+      "verify_before_launch": true
+    }
+  ],
+  "water_savings": {
+    "gallons_per_sqft_per_year": "30",
+    "basis": "Approximate annual saving from replacing cool-season turf with low-water planting in the Contra Costa / Tri-Valley climate, derived from local evapotranspiration. An estimate, and presented as one — actual saving depends on what replaces the lawn and how it is irrigated.",
+    "verify_before_launch": true
+  }
+}

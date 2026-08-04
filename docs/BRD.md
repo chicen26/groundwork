@@ -210,7 +210,7 @@ Photos of private property = sensitive: EXIF stripped, storage bucket private, s
 
 ## 8. Verify-before-launch register
 1. Zone 0 adoption status (bof.fire.ca.gov) — recheck monthly + before video
-2. Rebate terms/caps for all three utilities (EBMUD/CCWD/DSRSD pages)
+2. Rebate terms/caps for all three utilities (EBMUD/CCWD/DSRSD pages) — now encoded in `services/api/programs/rebates.json`; re-verify every figure there before the video
 3. WUCOLS bulk download link (site blocked automated fetch)
 4. CNPS/Calscape attribution email sent + response
 5. CAL FIRE incidents endpoint stability (fallback: NIFC ArcGIS feeds)

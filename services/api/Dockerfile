@@ -14,6 +14,7 @@ COPY app ./app
 COPY migrations ./migrations
 # Rulebooks are data the service refuses to start without: every score cites one.
 COPY rulebooks ./rulebooks
+COPY programs ./programs
 RUN pip install --no-cache-dir .
 
 # Run as a non-root user. The one directory the service does write to is photo storage, so it has
