@@ -1,0 +1,46 @@
+# --- Node / Expo ---
+node_modules/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+npm-debug.*
+yarn-error.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+htmlcov/
+.coverage
+
+# --- Secrets / env ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- ML artifacts (tracked out-of-band, see ml/README.md) ---
+ml/data/
+ml/runs/
+ml/weights/
+*.pt
+*.onnx
+*.mlmodel
+*.tflite
+
+# --- GIS source layers (large; imported via scripts) ---
+infra/gis/raw/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
