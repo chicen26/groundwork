@@ -13,7 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import pool
-from app.routers import health, properties
+from app.routers import health, properties, rules
+from app.rules.rulebook import load_rulebook
 
 API_PREFIX = "/v1"
 
@@ -28,6 +29,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     fresh checkout can still boot the app and read /docs before anyone has provisioned Postgres.
     """
     settings = get_settings()
+
+    # Fail fast on a rulebook that cannot load. Every score cites it, so a deployment pinned to a
+    # version that is not present would serve findings it cannot justify.
+    load_rulebook(settings.rulebook_version)
+
     if settings.database_url:
         await pool.init_pool(
             settings.database_url,
@@ -68,6 +74,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(properties.router, prefix=API_PREFIX)
+    app.include_router(rules.router, prefix=API_PREFIX)
 
     return app
 

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Rulebooks are data, not code: the active version is pinned per environment so a Zone 0
     # finalization ships as a content update rather than a deploy of new logic.
-    rulebook_version: str = "unreleased"
+    rulebook_version: str = "2026.08"
 
     # Comma-separated origins allowed to call the API. Expo dev clients use exp:// and
     # http://localhost, so development stays permissive and production is explicit.

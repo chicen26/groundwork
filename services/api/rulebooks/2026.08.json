@@ -1,0 +1,242 @@
+{
+  "version": "2026.08",
+  "description": "California defensible-space requirements (PRC 4291), the draft Zone 0 ember-resistant zone pending final adoption, and advisory items from the IBHS Wildfire Prepared Home standard. Every rule cites its source; rules that are not yet law are marked pending_adoption and carry a caveat shown beside the finding.",
+  "confidence_threshold": 0.5,
+  "disclaimer": "Groundwork provides educational guidance based on published state and local requirements. It is not an official inspection, a legal determination, or a guarantee of safety, and it does not provide evacuation guidance. Confirm your obligations with your local fire agency.",
+  "rules": [
+    {
+      "id": "prc4291.z1.dead_vegetation",
+      "title": "Remove dead and dying vegetation within 30 feet",
+      "rationale": "Dead grass, shrubs, and branches ignite from embers far more readily than living plants, and they carry fire toward the house.",
+      "citation": "PRC 4291(a)(1)",
+      "authority": "California Public Resources Code section 4291",
+      "status": "in_effect",
+      "zone": "5-30ft",
+      "severity": "critical",
+      "weight": 10,
+      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "triggers": {
+        "hazards": ["dead_vegetation"],
+        "checklist": ["dead_vegetation_present"]
+      },
+      "action": {
+        "title": "Clear dead vegetation within 30 feet of the house",
+        "detail": "Remove dead plants, dried grass, fallen leaves, and dead branches. Living, well-watered plants can stay.",
+        "effort_hours": 4,
+        "cost_est_usd": 0,
+        "program_key": "diablo_fsc_chipping"
+      }
+    },
+    {
+      "id": "prc4291.roof_debris",
+      "title": "Keep the roof clear of leaves and needles",
+      "rationale": "A roof holding dry needles is the most common way an ember becomes a house fire.",
+      "citation": "PRC 4291(a)(3)",
+      "authority": "California Public Resources Code section 4291",
+      "status": "in_effect",
+      "zone": "structure",
+      "severity": "critical",
+      "weight": 10,
+      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "triggers": { "checklist": ["roof_debris_present"] },
+      "action": {
+        "title": "Clear the roof and gutters",
+        "detail": "Remove accumulated leaves, needles, and other vegetative debris from the roof surface and gutters.",
+        "effort_hours": 2,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "prc4291.chimney_clearance",
+      "title": "Keep limbs 10 feet clear of the chimney",
+      "rationale": "Branches over a chimney or stovepipe outlet can be ignited directly by escaping sparks.",
+      "citation": "PRC 4291(a)(4)",
+      "authority": "California Public Resources Code section 4291",
+      "status": "in_effect",
+      "zone": "structure",
+      "severity": "high",
+      "weight": 7,
+      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "triggers": {
+        "hazards": ["overhanging_limbs"],
+        "checklist": ["limbs_near_chimney"]
+      },
+      "action": {
+        "title": "Prune limbs within 10 feet of the chimney outlet",
+        "detail": "Remove tree limbs that sit within 10 feet of a chimney or stovepipe outlet.",
+        "effort_hours": 2,
+        "cost_est_usd": 150,
+        "program_key": "diablo_fsc_chipping"
+      }
+    },
+    {
+      "id": "prc4291.z2.fuel_reduction",
+      "title": "Reduce fuels between 30 and 100 feet",
+      "rationale": "The outer zone is where a running fire is slowed down before it reaches the defensible space nearer the house.",
+      "citation": "PRC 4291(a)(2)",
+      "authority": "California Public Resources Code section 4291",
+      "status": "in_effect",
+      "zone": "30-100ft",
+      "severity": "high",
+      "weight": 7,
+      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "triggers": { "checklist": ["outer_zone_fuels_dense", "grass_over_four_inches"] },
+      "action": {
+        "title": "Thin and mow the 30-to-100-foot zone",
+        "detail": "Cut annual grasses down, create space between shrubs and trees, and remove ladder fuels that let fire climb into tree canopies.",
+        "effort_hours": 8,
+        "cost_est_usd": 0,
+        "program_key": "diablo_fsc_chipping"
+      }
+    },
+    {
+      "id": "zone0.combustible_mulch",
+      "title": "No combustible mulch in the first five feet",
+      "rationale": "Bark mulch against the foundation holds embers and burns slowly right at the base of the wall.",
+      "citation": "Draft Zone 0 regulation, 0-5 foot ember-resistant zone",
+      "authority": "California Board of Forestry and Fire Protection (draft, April 2026)",
+      "status": "pending_adoption",
+      "zone": "0-5ft",
+      "severity": "critical",
+      "weight": 9,
+      "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
+      "applicability": { "fhsz_in": ["very_high"] },
+      "triggers": {
+        "hazards": ["combustible_mulch_z0"],
+        "checklist": ["combustible_mulch_present"]
+      },
+      "action": {
+        "title": "Replace bark mulch with gravel or stone in the first five feet",
+        "detail": "Swap combustible mulch against the house for gravel, decomposed granite, or bare soil.",
+        "effort_hours": 5,
+        "cost_est_usd": 200
+      }
+    },
+    {
+      "id": "zone0.veg_touching_structure",
+      "title": "Nothing planted against the walls",
+      "rationale": "A shrub touching siding is a direct path from a ground fire to the structure.",
+      "citation": "Draft Zone 0 regulation, 0-5 foot ember-resistant zone",
+      "authority": "California Board of Forestry and Fire Protection (draft, April 2026)",
+      "status": "pending_adoption",
+      "zone": "0-5ft",
+      "severity": "critical",
+      "weight": 9,
+      "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
+      "applicability": { "fhsz_in": ["very_high"] },
+      "triggers": {
+        "hazards": ["veg_touching_structure"],
+        "checklist": ["vegetation_against_walls"]
+      },
+      "action": {
+        "title": "Clear vegetation touching the house",
+        "detail": "Remove or relocate plants growing against exterior walls, and keep the first five feet free of living and dead vegetation.",
+        "effort_hours": 4,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "zone0.attached_wood_fence",
+      "title": "No combustible fence attached to the house",
+      "rationale": "A wooden fence that meets the wall is a wick: fire travels along it and arrives at the structure.",
+      "citation": "Draft Zone 0 regulation, 0-5 foot ember-resistant zone",
+      "authority": "California Board of Forestry and Fire Protection (draft, April 2026)",
+      "status": "pending_adoption",
+      "zone": "0-5ft",
+      "severity": "high",
+      "weight": 7,
+      "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
+      "applicability": { "fhsz_in": ["very_high"] },
+      "triggers": {
+        "hazards": ["attached_wood_fence"],
+        "checklist": ["wood_fence_attached"]
+      },
+      "action": {
+        "title": "Replace the last five feet of attached fencing with non-combustible material",
+        "detail": "Swap the section of wooden fence that meets the house for metal, or install a metal gate as a break.",
+        "effort_hours": 4,
+        "cost_est_usd": 400
+      }
+    },
+    {
+      "id": "ibhs.combustibles_under_deck",
+      "title": "Keep the space under decks clear",
+      "rationale": "Stored firewood, furniture, and debris under a deck give embers somewhere to smoulder out of sight.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "0-5ft",
+      "severity": "high",
+      "weight": 7,
+      "applicability": {},
+      "triggers": {
+        "hazards": ["combustibles_under_deck"],
+        "checklist": ["storage_under_deck"]
+      },
+      "action": {
+        "title": "Clear everything stored under the deck",
+        "detail": "Move firewood, furniture, and stored material out from under decks and porches, and clear accumulated leaf litter.",
+        "effort_hours": 3,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "ibhs.ember_resistant_vents",
+      "title": "Screen vents against embers",
+      "rationale": "Embers drawn through an unscreened vent start a fire inside the walls or attic, where nobody sees it.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "structure",
+      "severity": "high",
+      "weight": 6,
+      "applicability": {},
+      "triggers": { "checklist": ["vents_unscreened"] },
+      "action": {
+        "title": "Fit 1/8-inch metal mesh to vents",
+        "detail": "Cover attic and crawlspace vents with 1/8-inch non-combustible metal mesh, or replace them with ember-resistant vents.",
+        "effort_hours": 3,
+        "cost_est_usd": 120,
+        "program_key": "mofd_vent_mesh"
+      }
+    },
+    {
+      "id": "ibhs.gutters_clear",
+      "title": "Keep gutters free of debris",
+      "rationale": "A gutter full of dry needles holds fire directly against the roof edge.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "structure",
+      "severity": "moderate",
+      "weight": 4,
+      "applicability": {},
+      "triggers": { "checklist": ["gutters_full"] },
+      "action": {
+        "title": "Clear the gutters",
+        "detail": "Remove debris from gutters and downspouts, and consider non-combustible gutter covers.",
+        "effort_hours": 2,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "ibhs.firewood_clearance",
+      "title": "Move firewood away from the house",
+      "rationale": "A woodpile against the wall is a large, dry fuel load in the worst possible place.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "5-30ft",
+      "severity": "moderate",
+      "weight": 4,
+      "applicability": {},
+      "triggers": { "checklist": ["firewood_near_house"] },
+      "action": {
+        "title": "Relocate firewood at least 30 feet from structures",
+        "detail": "Move stacked firewood and lumber out of the first 30 feet, or store it uphill and away from the house.",
+        "effort_hours": 2,
+        "cost_est_usd": 0
+      }
+    }
+  ]
+}
