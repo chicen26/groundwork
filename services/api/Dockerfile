@@ -12,6 +12,8 @@ COPY app ./app
 # Migrations ship with the image: `python -m app.db.migrate` has to be runnable in the deployed
 # container, not just from a checkout.
 COPY migrations ./migrations
+# Rulebooks are data the service refuses to start without: every score cites one.
+COPY rulebooks ./rulebooks
 RUN pip install --no-cache-dir .
 
 # Run as a non-root user; the service never needs to write to its own filesystem.

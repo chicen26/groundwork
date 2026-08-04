@@ -91,9 +91,27 @@ jobs:
         run: npm run typecheck
 
   docker:
-    name: API — image builds
+    name: API — image builds and boots
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Build image
         run: docker build -t groundwork-api:ci services/api
+
+      - name: Boot the image and answer a request
+        # Building proves the Dockerfile parses; it does not prove the image contains everything
+        # the service needs. Startup validates the pinned rulebook, so a missing COPY only shows up
+        # here.
+        run: |
+          docker run -d --name groundwork-ci -p 8000:8000 groundwork-api:ci
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/v1/health > /tmp/health.json; then break; fi
+            sleep 2
+          done
+          cat /tmp/health.json
+          grep -q '"status":"ok"' /tmp/health.json
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs groundwork-ci || true
