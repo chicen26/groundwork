@@ -54,3 +54,38 @@ recoverable and is labeled "flagged for review"; a wrong rebate figure or readin
 
 **Why.** Demo-day fallback is a laptop-hosted backend behind a tunnel. That fallback is only real if
 the image is known to build; discovering a broken Dockerfile in October is not a risk worth carrying.
+
+---
+
+### D6 — Boundary layers are imported and versioned, never queried live · Aug 4, 2026
+
+**Decision.** CAL FIRE's FHSZ maps are imported into our PostGIS as versioned snapshots. An import
+promotes itself to active only after every feature has loaded, and resolution reads only the active
+version.
+
+**Why.** Governing principle 3 — no external call in the hot path. Beyond uptime, a homeowner's zone
+is a claim about a specific published map, so we store which edition produced it and show that with
+the answer. Versioning also makes a bad refresh recoverable rather than a live outage.
+
+---
+
+### D7 — An unresolved layer is reported, not guessed · Aug 4, 2026
+
+**Decision.** Where no polygon contains a property, the API returns the layer in `unresolved` rather
+than falling back to a nearest match or a city-name lookup.
+
+**Why.** Naming the wrong fire district sends someone to the wrong agency for an inspection, and
+Walnut Creek and San Ramon are each split between two water utilities, which changes the rebate rate
+and cap. A visible gap is honest and fixable; a confident wrong answer is neither.
+
+---
+
+### D8 — Tokens are verified locally; the dev header fails closed · Aug 4, 2026
+
+**Decision.** Supabase issues JWTs and we verify them ourselves. A development-only
+`X-Groundwork-User` header exists, and is refused whenever the environment is production or a JWT
+secret is configured. A bearer token presented while no secret is configured returns 503 rather than
+being accepted.
+
+**Why.** Building the scan flow should not require a Supabase project, but a convenience header that
+could survive into a deployment is a hole. Both failure modes resolve toward refusing access.

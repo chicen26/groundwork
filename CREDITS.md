@@ -16,6 +16,10 @@ dependencies are added.
 | Uvicorn | ASGI server | BSD-3-Clause |
 | pytest | Backend tests | MIT |
 | Ruff | Backend lint + format | MIT |
+| asyncpg | Postgres driver | Apache-2.0 |
+| PostGIS | Spatial types and point-in-polygon queries | GPL-2.0 (server-side; not linked into our code) |
+| PyJWT | Verifying Supabase-issued tokens | MIT |
+| certifi | CA bundle for outbound HTTPS | MPL-2.0 |
 
 _Additional entries are appended as each step lands (PostGIS, Supabase client, Ultralytics YOLO11,
 turf.js, WeasyPrint/ReportLab)._
@@ -34,6 +38,8 @@ turf.js, WeasyPrint/ReportLab)._
 
 | Source | Use | Access |
 |---|---|---|
+| CAL FIRE FHSZ feature services (LRA 2025 v1, SRA 2023 v3) | Zone lookup | Public ArcGIS services; imported into our PostGIS and served from there |
+| US Census Bureau geocoder | Address to coordinate | Free, no key; results cached |
 | NWS `api.weather.gov` | Red Flag Warning banner | Free, no key; cached server-side |
 | CAL FIRE incidents JSON | Nearby active incidents | Undocumented endpoint; cached, treated as unstable |
 | NASA FIRMS | Optional hotspot context | Free key; cached |

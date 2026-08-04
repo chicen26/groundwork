@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import pool
-from app.routers import health
+from app.routers import health, properties
 
 API_PREFIX = "/v1"
 
@@ -67,6 +67,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router, prefix=API_PREFIX)
+    app.include_router(properties.router, prefix=API_PREFIX)
 
     return app
 

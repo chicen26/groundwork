@@ -9,6 +9,10 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "asyncpg>=0.30",
+    # Explicit CA bundle: the stdlib falls back to whatever the host has, which on macOS python.org
+    # builds is nothing. Layer imports must not depend on how Python was installed.
+    "certifi>=2024.8.30",
+    "pyjwt>=2.9",
 ]
 
 [project.optional-dependencies]

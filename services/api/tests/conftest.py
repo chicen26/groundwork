@@ -72,9 +72,9 @@ async def db(migrated_dsn: str) -> AsyncIterator[asyncpg.Connection]:
 @pytest_asyncio.fixture
 async def clean_db(db: asyncpg.Connection) -> AsyncIterator[asyncpg.Connection]:
     """Truncate user data between tests so ordering never matters."""
-    await db.execute("TRUNCATE users, programs, plants, feed_cache CASCADE")
+    await db.execute("TRUNCATE users, programs, plants, feed_cache, gis_layer_versions CASCADE")
     yield db
-    await db.execute("TRUNCATE users, programs, plants, feed_cache CASCADE")
+    await db.execute("TRUNCATE users, programs, plants, feed_cache, gis_layer_versions CASCADE")
 
 
 async def create_user(conn: asyncpg.Connection, email: str | None = None) -> UUID:

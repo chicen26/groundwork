@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     db_pool_min_size: int = 1
     db_pool_max_size: int = 10
 
+    # Supabase issues the JWTs; we verify them locally with this secret. When it is empty the API
+    # accepts the development user header instead — see app/auth.py, which refuses that fallback in
+    # production.
+    supabase_jwt_secret: str = ""
+    supabase_jwt_audience: str = "authenticated"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
