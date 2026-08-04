@@ -1,0 +1,186 @@
+/**
+ * The API client.
+ *
+ * One place that knows how to reach the backend and how to carry the caller's identity, so no
+ * screen builds a URL or a header by hand. Errors arrive as `ApiError` with the server's own
+ * message, because "could not locate that address, place it on the map instead" is far more use to
+ * a homeowner than "Request failed".
+ */
+
+import Constants from 'expo-constants';
+
+import type { Assessment, Finding, Property, Question, ScanSummary, Station } from './types';
+
+/**
+ * Where the backend lives. Configured in app.json so a dev build, a tunnel, and demo day can each
+ * point somewhere different without a code change.
+ */
+export const API_BASE_URL: string =
+  (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ?? 'http://127.0.0.1:8000';
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+
+  /** True when the request itself was fine but we could not act on it — worth showing verbatim. */
+  get isActionable(): boolean {
+    return this.status === 422 || this.status === 404;
+  }
+}
+
+/** Identity header. Replaced by a Supabase bearer token once auth is wired up. */
+export type Credentials = { userId: string };
+
+function headersFor(credentials: Credentials, extra: Record<string, string> = {}) {
+  return { 'X-Groundwork-User': credentials.userId, ...extra };
+}
+
+async function unwrap<T>(response: Response): Promise<T> {
+  if (response.ok) {
+    return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
+  }
+
+  // FastAPI puts the useful text in `detail`, sometimes as a validation array.
+  let message = `Request failed (${response.status})`;
+  try {
+    const body = await response.json();
+    if (typeof body?.detail === 'string') {
+      message = body.detail;
+    } else if (Array.isArray(body?.detail) && body.detail[0]?.msg) {
+      message = body.detail[0].msg;
+    }
+  } catch {
+    // A non-JSON error body is not worth failing over; the status carries enough.
+  }
+  throw new ApiError(response.status, message);
+}
+
+async function request<T>(
+  path: string,
+  credentials: Credentials,
+  init: RequestInit = {},
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}/v1${path}`, {
+    ...init,
+    headers: headersFor(credentials, {
+      ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+      ...((init.headers as Record<string, string>) ?? {}),
+    }),
+  });
+  return unwrap<T>(response);
+}
+
+export const api = {
+  health(): Promise<{ status: string; rulebook_version: string }> {
+    return fetch(`${API_BASE_URL}/v1/health`).then((r) =>
+      unwrap<{ status: string; rulebook_version: string }>(r),
+    );
+  },
+
+  listProperties(credentials: Credentials): Promise<Property[]> {
+    return request<Property[]>('/properties', credentials);
+  },
+
+  getProperty(credentials: Credentials, id: string): Promise<Property> {
+    return request<Property>(`/properties/${id}`, credentials);
+  },
+
+  createProperty(
+    credentials: Credentials,
+    body: { address: string; label?: string; lat?: number; lng?: number },
+  ): Promise<Property> {
+    return request<Property>('/properties', credentials, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  startScan(credentials: Credentials, propertyId: string): Promise<ScanSummary> {
+    return request<ScanSummary>(`/properties/${propertyId}/scans`, credentials, { method: 'POST' });
+  },
+
+  getScan(credentials: Credentials, scanId: string): Promise<ScanSummary> {
+    return request<ScanSummary>(`/scans/${scanId}`, credentials);
+  },
+
+  /**
+   * Upload one station photograph.
+   *
+   * Returns as soon as the photo is stored — inference is queued, not awaited, so the walk never
+   * stalls behind a model.
+   */
+  async uploadPhoto(
+    credentials: Credentials,
+    scanId: string,
+    station: Station,
+    photoUri: string,
+  ): Promise<{ photo_id: string }> {
+    const form = new FormData();
+    form.append('station', station);
+    // React Native's FormData takes this shape for a local file; the cast is the standard escape
+    // hatch, since the DOM's File type does not apply here.
+    form.append('file', {
+      uri: photoUri,
+      name: `${station}.jpg`,
+      type: 'image/jpeg',
+    } as unknown as Blob);
+
+    const response = await fetch(`${API_BASE_URL}/v1/scans/${scanId}/photos`, {
+      method: 'POST',
+      headers: headersFor(credentials),
+      body: form,
+    });
+    return unwrap<{ photo_id: string }>(response);
+  },
+
+  photoUrl(scanId: string, photoId: string): string {
+    return `${API_BASE_URL}/v1/photos/${photoId}/content`;
+  },
+
+  listFindings(credentials: Credentials, scanId: string): Promise<Finding[]> {
+    return request<Finding[]>(`/scans/${scanId}/findings`, credentials);
+  },
+
+  setFindingStatus(
+    credentials: Credentials,
+    findingId: string,
+    status: 'confirmed' | 'dismissed' | 'resolved' | 'open',
+  ): Promise<Finding> {
+    return request<Finding>(`/findings/${findingId}/status`, credentials, {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  getChecklist(credentials: Credentials): Promise<Question[]> {
+    return request<Question[]>('/checklist', credentials);
+  },
+
+  submitChecklist(
+    credentials: Credentials,
+    scanId: string,
+    answers: { question_id: string; hazard_present: boolean }[],
+  ): Promise<ScanSummary> {
+    return request<ScanSummary>(`/scans/${scanId}/checklist`, credentials, {
+      method: 'PUT',
+      body: JSON.stringify({ answers }),
+    });
+  },
+
+  assess(credentials: Credentials, scanId: string): Promise<Assessment> {
+    return request<Assessment>(`/scans/${scanId}/assess`, credentials, { method: 'POST' });
+  },
+
+  getAssessment(credentials: Credentials, assessmentId: string): Promise<Assessment> {
+    return request<Assessment>(`/assessments/${assessmentId}`, credentials);
+  },
+
+  completePlanItem(credentials: Credentials, itemId: string): Promise<void> {
+    return request<void>(`/plan-items/${itemId}/complete`, credentials, { method: 'POST' });
+  },
+};

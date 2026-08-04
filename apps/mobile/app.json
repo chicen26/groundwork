@@ -25,7 +25,17 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Groundwork uses the camera so you can photograph your own property for a defensible-space assessment. Photos are private to your account and their location metadata is stripped before upload."
+        }
+      ]
+    ]
   }
 }
