@@ -16,8 +16,11 @@ COPY migrations ./migrations
 COPY rulebooks ./rulebooks
 RUN pip install --no-cache-dir .
 
-# Run as a non-root user; the service never needs to write to its own filesystem.
-RUN useradd --create-home --uid 10001 groundwork
+# Run as a non-root user. The one directory the service does write to is photo storage, so it has
+# to exist and be owned before privileges drop — otherwise startup dies creating it.
+RUN useradd --create-home --uid 10001 groundwork \
+    && mkdir -p /srv/var/photos \
+    && chown -R groundwork:groundwork /srv/var
 USER groundwork
 
 EXPOSE 8000

@@ -62,8 +62,9 @@ def sanitize(raw: bytes) -> tuple[bytes, int, int]:
             if max(upright.size) > MAX_DIMENSION_PX:
                 upright.thumbnail((MAX_DIMENSION_PX, MAX_DIMENSION_PX), Image.LANCZOS)
 
-            clean = Image.new("RGB", upright.size)
-            clean.putdata(list(upright.getdata()))
+            # Rebuild from raw pixel bytes. This is what actually removes EXIF, ICC, and XMP: the
+            # new image has no `info` dict to carry them, so only pixels can survive.
+            clean = Image.frombytes(upright.mode, upright.size, upright.tobytes())
 
             buffer = io.BytesIO()
             clean.save(buffer, format="JPEG", quality=88, optimize=True)

@@ -9,6 +9,7 @@ is gone from the bytes we would store.
 from __future__ import annotations
 
 import io
+import re
 from pathlib import Path
 from uuid import uuid4
 
@@ -97,12 +98,17 @@ def test_stored_paths_are_unguessable(tmp_path: Path) -> None:
     storage = LocalPhotoStorage(tmp_path)
     scan_id = uuid4()
 
-    first = storage.put(scan_id, b"one")
-    second = storage.put(scan_id, b"two")
+    paths = {storage.put(scan_id, b"one") for _ in range(20)}
 
-    assert first != second
-    assert not first.endswith("1.jpg")
-    assert storage.get(first) == b"one"
+    assert len(paths) == 20, "names must not collide or follow a sequence"
+    for path in paths:
+        scan_part, _, name = path.partition("/")
+        assert scan_part == str(scan_id)
+        # 32 hex characters of randomness, not a counter an attacker could walk.
+        assert re.fullmatch(r"[0-9a-f]{32}\.jpg", name), name
+
+    sample = paths.pop()
+    assert storage.get(sample) == b"one"
 
 
 def test_storage_refuses_to_escape_its_root(tmp_path: Path) -> None:
