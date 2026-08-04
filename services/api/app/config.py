@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     # http://localhost, so development stays permissive and production is explicit.
     cors_origins: str = "*"
 
+    # Postgres/PostGIS connection string. Empty in unit-test runs that never touch the database;
+    # startup fails loudly if it is missing in production.
+    database_url: str = ""
+    db_pool_min_size: int = 1
+    db_pool_max_size: int = 10
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

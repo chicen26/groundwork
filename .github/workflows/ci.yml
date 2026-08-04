@@ -16,6 +16,27 @@ jobs:
     defaults:
       run:
         working-directory: services/api
+
+    # Row-level security policies and CHECK constraints cannot be tested against a fake database,
+    # so CI always provides a real PostGIS. Locally these tests skip when no DSN is configured.
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: groundwork
+          POSTGRES_PASSWORD: groundwork
+          POSTGRES_DB: groundwork_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U groundwork"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      GROUNDWORK_TEST_DATABASE_URL: postgresql://groundwork:groundwork@localhost:5432/groundwork_test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +57,17 @@ jobs:
 
       - name: Test
         run: pytest
+
+      - name: Fail if database tests were skipped
+        # A silent skip would turn our privacy guarantees into untested claims.
+        run: |
+          pytest -q -m "" tests/test_row_level_security.py --collect-only >/dev/null
+          pytest -q tests/test_row_level_security.py -p no:cacheprovider \
+            | tee /tmp/rls.txt
+          if grep -qi "skipped" /tmp/rls.txt; then
+            echo "::error::row-level security tests skipped — the database service is not reachable"
+            exit 1
+          fi
 
   mobile:
     name: Mobile — typecheck
