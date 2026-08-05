@@ -541,23 +541,52 @@ async def _plan_for(conn, assessment_id: UUID) -> list[PlanItemResponse]:
 async def complete_plan_item(
     user_id: CurrentUser, item_id: Annotated[UUID, Path()]
 ) -> PlanItemResponse:
-    """Tick off a task, and resolve the finding it was raised for.
+    """Tick off a task, and resolve the evidence it was raised for.
 
-    Resolving the finding is what makes the next assessment reflect the work — otherwise the score
-    would sit still while the yard got safer.
+    Resolving the evidence is what makes the next assessment reflect the work — otherwise the
+    score would sit still while the yard got safer. Evidence lives in two places, and both are
+    resolved: model findings for this rule's hazards, and checklist answers for its questions.
     """
     async with pool.acquire_as_user(user_id) as conn:
         row = await conn.fetchrow(
             """
             UPDATE plan_items SET done_at = now() WHERE id = $1
-            RETURNING id, rank, title, detail, citation, zone, severity, rule_status, caveat,
-                      effort_hours, cost_est_usd, score_if_done, done_at, finding_id
+            RETURNING id, rank, rule_id, title, detail, citation, zone, severity, rule_status,
+                      caveat, effort_hours, cost_est_usd, score_if_done, done_at, finding_id,
+                      (SELECT a.scan_id FROM plans p JOIN assessments a ON a.id = p.assessment_id
+                       WHERE p.id = plan_items.plan_id) AS scan_id
             """,
             item_id,
         )
         if row is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="plan item not found")
-        if row["finding_id"]:
+
+        rule = next(
+            (r for r in active_rulebook().rules if r.id == row["rule_id"]),
+            None,
+        )
+        if rule and row["scan_id"]:
+            if rule.triggers.checklist:
+                await conn.execute(
+                    """
+                    UPDATE checklist_answers SET resolved_at = now()
+                    WHERE scan_id = $1 AND question_id = ANY($2) AND hazard_present
+                    """,
+                    row["scan_id"],
+                    rule.triggers.checklist,
+                )
+            if rule.triggers.hazards:
+                # Dismissed stays dismissed: the user said it was never real, which is a different
+                # statement from "it was real and I fixed it".
+                await conn.execute(
+                    """
+                    UPDATE findings SET status = 'resolved'
+                    WHERE scan_id = $1 AND hazard::text = ANY($2) AND status <> 'dismissed'
+                    """,
+                    row["scan_id"],
+                    rule.triggers.hazards,
+                )
+        elif row["finding_id"]:
             await conn.execute(
                 "UPDATE findings SET status = 'resolved' WHERE id = $1", row["finding_id"]
             )

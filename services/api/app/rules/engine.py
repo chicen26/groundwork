@@ -63,6 +63,9 @@ class RuleOutcome:
     evidence: tuple[Evidence, ...] = ()
     # Evidence too uncertain to count yet — surfaced so the user can confirm it.
     unconfirmed: tuple[Evidence, ...] = ()
+    # Evidence that once triggered this rule and has since been resolved by doing the work. The
+    # rule is met, but the plan should still show the task — as done, not as vanished.
+    resolved_evidence: tuple[Evidence, ...] = ()
 
     @property
     def weight_lost(self) -> float:
@@ -165,12 +168,15 @@ def evaluate(
     for rule in rulebook.applicable(fhsz, state):
         triggering: list[Evidence] = []
         unconfirmed: list[Evidence] = []
+        resolved: list[Evidence] = []
 
         for key in [*rule.triggers.hazards, *rule.triggers.checklist]:
             for item in by_key.get(key, []):
                 if item.counts(rulebook.confidence_threshold):
                     triggering.append(item)
-                elif not item.dismissed and not item.resolved:
+                elif item.resolved:
+                    resolved.append(item)
+                elif not item.dismissed:
                     unconfirmed.append(item)
 
         met = not triggering
@@ -184,6 +190,7 @@ def evaluate(
                 met=met,
                 evidence=tuple(triggering),
                 unconfirmed=tuple(unconfirmed),
+                resolved_evidence=tuple(resolved),
             )
         )
 
@@ -232,13 +239,17 @@ class PlanItem:
     finding_ids: list[str] = field(default_factory=list)
     # What the score becomes if only this item is completed.
     score_if_done: int = 0
+    # True for work already finished: the rule is met because its evidence was resolved.
+    done: bool = False
 
 
 def build_plan(assessment: Assessment) -> list[PlanItem]:
-    """Turn unmet rules into a ranked list of actions.
+    """Turn unmet rules into a ranked list of actions, keeping finished work on the list.
 
     Ordering is by weight, and binding law outranks a draft regulation of equal weight: what someone
-    is required to do today should sit above what they may be required to do later.
+    is required to do today should sit above what they may be required to do later. Rules met by
+    *resolving* their evidence — the user did the work — stay on the plan marked done, so a
+    re-assessment reads as progress rather than amnesia.
     """
     ranked = sorted(
         assessment.failures,
@@ -248,9 +259,13 @@ def build_plan(assessment: Assessment) -> list[PlanItem]:
             outcome.rule.id,
         ),
     )
+    completed = sorted(
+        (o for o in assessment.outcomes if o.met and o.resolved_evidence),
+        key=lambda outcome: (-outcome.rule.weight, outcome.rule.id),
+    )
 
-    return [
-        PlanItem(
+    def item(index: int, outcome: RuleOutcome, *, done: bool) -> PlanItem:
+        return PlanItem(
             rank=index,
             kind="fire",
             rule_id=outcome.rule.id,
@@ -264,8 +279,21 @@ def build_plan(assessment: Assessment) -> list[PlanItem]:
             effort_hours=outcome.rule.action.effort_hours,
             cost_est_usd=outcome.rule.action.cost_est_usd,
             program_key=outcome.rule.action.program_key,
-            finding_ids=[e.finding_id for e in outcome.evidence if e.finding_id],
-            score_if_done=score_if_resolved(assessment, {outcome.rule.id}),
+            finding_ids=[
+                e.finding_id
+                for e in (outcome.evidence if not done else outcome.resolved_evidence)
+                if e.finding_id
+            ],
+            # A finished item's score is already in the number; promising more would be a lie.
+            score_if_done=(
+                assessment.score if done else score_if_resolved(assessment, {outcome.rule.id})
+            ),
+            done=done,
         )
-        for index, outcome in enumerate(ranked, start=1)
-    ]
+
+    plan = [item(index, outcome, done=False) for index, outcome in enumerate(ranked, start=1)]
+    plan.extend(
+        item(index, outcome, done=True)
+        for index, outcome in enumerate(completed, start=len(plan) + 1)
+    )
+    return plan

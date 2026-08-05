@@ -135,7 +135,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     [credentials, loading, email, signIn, signInWithPassword, signUpWithPassword, signOut],
   );
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  // Nothing renders until we know who this is: a deep link into a signed-in screen must not
+  // mount before the stored session has been read, or it throws on a race it cannot see.
+  return (
+    <SessionContext.Provider value={value}>{loading ? null : children}</SessionContext.Provider>
+  );
 }
 
 export function useSession(): SessionValue {

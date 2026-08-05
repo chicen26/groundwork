@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     flexGrow: 1,
-    maxWidth: 640,
+    maxWidth: 720,
     width: '100%',
     alignSelf: 'center',
   },
@@ -197,8 +197,8 @@ const styles = StyleSheet.create({
   progressFill: { height: '100%', backgroundColor: colors.accent, borderRadius: radius.pill },
   progressLabel: { ...type.label, color: colors.textMuted },
   // The question owns the middle of the screen; everything else keeps to the edges.
-  stage: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.lg },
-  questionCard: { padding: spacing.lg, marginBottom: spacing.sm },
+  stage: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.xl },
+  questionCard: { padding: spacing.xl, paddingVertical: spacing.xl, marginBottom: spacing.sm },
   zone: {
     ...type.overline,
     color: colors.textMuted,

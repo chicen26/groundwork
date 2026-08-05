@@ -5,14 +5,15 @@
  * Maps API key, which is an account, a billing profile, and a secret to manage — real friction for
  * a free student project, and a thing that breaks for anyone who clones the repo. Leaflet over Esri
  * World Imagery needs no key at all and renders identically on iOS, Android, and the web, so there
- * is one implementation instead of three.
+ * is one implementation instead of three. In a browser, where WebView does not exist, the very
+ * same page runs in an iframe and speaks over postMessage instead.
  *
  * The page is inlined rather than fetched, so drawing a lawn works with no network beyond the map
  * tiles themselves, and there is no third-party script in the trust path.
  */
 
-import { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 export interface LatLng {
@@ -52,7 +53,9 @@ function page(lat: number, lng: number): string {
 
   function send() {
     // The native side owns the state that matters; this page just reports what was tapped.
-    window.ReactNativeWebView.postMessage(JSON.stringify({ points: points }));
+    var payload = JSON.stringify({ points: points });
+    if (window.ReactNativeWebView) { window.ReactNativeWebView.postMessage(payload); }
+    else if (window.parent !== window) { window.parent.postMessage(payload, '*'); }
   }
 
   function redraw() {
@@ -77,9 +80,10 @@ function page(lat: number, lng: number): string {
     redraw();
   });
 
-  // Commands from the native side.
+  // Commands from the native side (or the parent page, on the web).
   function handle(raw) {
-    var msg = JSON.parse(raw);
+    var msg;
+    try { msg = JSON.parse(raw); } catch (err) { return; } // not ours; browsers chatter
     if (msg.action === 'undo') { points.pop(); redraw(); }
     if (msg.action === 'clear') { points = []; redraw(); }
   }
@@ -95,17 +99,29 @@ export interface LawnMapHandle {
   clear: () => void;
 }
 
-export function LawnMap({
-  lat,
-  lng,
-  onChange,
-  controlsRef,
-}: {
+function parsePoints(raw: string): LatLng[] | null {
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.points)) return null;
+    return data.points.map((p: [number, number]) => ({ latitude: p[0], longitude: p[1] }));
+  } catch {
+    // A malformed message means a tap we cannot use; the next one will be fine.
+    return null;
+  }
+}
+
+export function LawnMap(props: {
   lat: number;
   lng: number;
   onChange: (points: LatLng[]) => void;
   controlsRef?: React.MutableRefObject<LawnMapHandle | null>;
 }) {
+  return Platform.OS === 'web' ? <LawnMapWeb {...props} /> : <LawnMapNative {...props} />;
+}
+
+type LawnMapProps = Parameters<typeof LawnMap>[0];
+
+function LawnMapNative({ lat, lng, onChange, controlsRef }: LawnMapProps) {
   const webRef = useRef<WebView>(null);
 
   if (controlsRef) {
@@ -123,18 +139,43 @@ export function LawnMap({
         style={styles.web}
         originWhitelist={['*']}
         onMessage={(event) => {
-          try {
-            const data = JSON.parse(event.nativeEvent.data);
-            onChange(
-              (data.points ?? []).map((p: [number, number]) => ({
-                latitude: p[0],
-                longitude: p[1],
-              })),
-            );
-          } catch {
-            // A malformed message means a tap we cannot use; the next one will be fine.
-          }
+          const points = parsePoints(event.nativeEvent.data);
+          if (points) onChange(points);
         }}
+      />
+    </View>
+  );
+}
+
+function LawnMapWeb({ lat, lng, onChange, controlsRef }: LawnMapProps) {
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
+
+  const command = (action: 'undo' | 'clear') =>
+    frameRef.current?.contentWindow?.postMessage(JSON.stringify({ action }), '*');
+  if (controlsRef) {
+    controlsRef.current = { undo: () => command('undo'), clear: () => command('clear') };
+  }
+
+  useEffect(() => {
+    const listen = (event: MessageEvent) => {
+      // Only the map's own frame; browser extensions and devtools post here too.
+      if (event.source !== frameRef.current?.contentWindow) return;
+      if (typeof event.data !== 'string') return;
+      const points = parsePoints(event.data);
+      if (points) onChange(points);
+    };
+    window.addEventListener('message', listen);
+    return () => window.removeEventListener('message', listen);
+  }, [onChange]);
+
+  return (
+    <View style={styles.wrap}>
+      <iframe
+        ref={frameRef}
+        srcDoc={page(lat, lng)}
+        style={{ border: 'none', width: '100%', height: '100%' }}
+        title="Lawn map"
+        sandbox="allow-scripts"
       />
     </View>
   );

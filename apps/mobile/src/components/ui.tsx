@@ -6,17 +6,37 @@
  * honesty claim, so it lives in a component rather than in each screen's discretion.
  */
 
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 import type { FhszClass, RuleStatus } from '@/api/types';
 import { FHSZ_LABELS } from '@/api/types';
 import { colors, radius, shadow, spacing, type } from '@/theme';
 
-export function Screen({ children, style }: { children?: React.ReactNode; style?: ViewStyle }) {
+export function Screen({
+  children,
+  style,
+}: {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   return <View style={[styles.screen, style]}>{children}</View>;
 }
 
-export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+export function Card({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 

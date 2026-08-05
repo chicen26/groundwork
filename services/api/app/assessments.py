@@ -26,7 +26,7 @@ WHERE f.scan_id = $1
 """
 
 _ANSWERS_QUERY = """
-SELECT question_id, hazard_present
+SELECT question_id, hazard_present, resolved_at
 FROM checklist_answers
 WHERE scan_id = $1
 """
@@ -51,9 +51,16 @@ async def gather_evidence(conn: asyncpg.Connection, scan_id: UUID) -> list[Evide
 
     for row in await conn.fetch(_ANSWERS_QUERY, scan_id):
         # Only a "yes" is evidence. A "no" is the absence of a hazard, which the engine represents
-        # by there being nothing to trigger the rule.
+        # by there being nothing to trigger the rule. A resolved "yes" — the user did the work —
+        # travels too, so the plan can show the task as done rather than forgetting it existed.
         if row["hazard_present"]:
-            evidence.append(Evidence(key=row["question_id"], source="checklist"))
+            evidence.append(
+                Evidence(
+                    key=row["question_id"],
+                    source="checklist",
+                    resolved=row["resolved_at"] is not None,
+                )
+            )
 
     return evidence
 
@@ -90,9 +97,11 @@ async def assess_scan(
             """
             INSERT INTO plan_items (
                 plan_id, rank, kind, rule_id, finding_id, title, detail, citation,
-                zone, severity, rule_status, caveat, effort_hours, cost_est_usd, score_if_done
+                zone, severity, rule_status, caveat, effort_hours, cost_est_usd, score_if_done,
+                done_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+                    CASE WHEN $16 THEN now() END)
             """,
             plan_id,
             item.rank,
@@ -111,6 +120,7 @@ async def assess_scan(
             item.effort_hours,
             item.cost_est_usd,
             item.score_if_done,
+            item.done,
         )
 
     return assessment_id, assessment

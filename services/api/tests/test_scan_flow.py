@@ -336,17 +336,17 @@ def test_completing_a_task_raises_the_score_to_its_preview(scan) -> None:
     item = first["plan"][0]
     predicted = item["score_if_done"]
 
+    # Completing the task is the whole gesture: it resolves the checklist answer behind the rule,
+    # with no second step for the user to know about.
     client.post(f"/v1/plan-items/{item['id']}/complete", headers=headers)
-    # Completing a checklist-driven task also means answering that question the other way.
-    client.put(
-        f"/v1/scans/{scan_id}/checklist",
-        json={"answers": [{"question_id": "roof_debris_present", "hazard_present": False}]},
-        headers=headers,
-    )
     second = client.post(f"/v1/scans/{scan_id}/assess", headers=headers).json()
 
     assert second["score"] == predicted
     assert second["score"] > first["score"]
+    # The finished task stays on the new plan, marked done: re-assessment is progress, not amnesia.
+    assert item["title"] in [i["title"] for i in second["plan"] if i["done"]]
+    # And the answer itself is remembered as resolved, not rewritten to "no".
+    assert item["title"] not in [i["title"] for i in second["plan"] if not i["done"]]
 
 
 def test_an_assessment_can_be_fetched_again(scan) -> None:
