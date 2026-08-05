@@ -23,6 +23,21 @@ class HealthResponse(BaseModel):
     rulebook_version: str
 
 
+@router.get("/", include_in_schema=False)
+def root(settings: SettingsDep) -> dict:
+    """A signpost at the root.
+
+    Nothing is served here, but a bare 404 while someone is checking their server started is an
+    unhelpful first impression — this says what is running and where to look.
+    """
+    return {
+        "service": "Groundwork API",
+        "version": settings.version,
+        "docs": "/docs",
+        "health": "/v1/health",
+    }
+
+
 @router.get("/health", response_model=HealthResponse)
 def health(settings: SettingsDep) -> HealthResponse:
     return HealthResponse(
