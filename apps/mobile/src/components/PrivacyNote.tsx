@@ -16,7 +16,7 @@ export function PrivacyNote() {
       <Text style={styles.title}>🔒 Your data stays yours</Text>
       <Text style={styles.body}>
         Photos are visible only to you, location data is stripped from them before upload, and
-        deleting a property or your account erases the actual files — not just the records.
+        deleting a property or your account erases the actual files, not just the records.
       </Text>
     </View>
   );

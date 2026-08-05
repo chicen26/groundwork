@@ -92,7 +92,7 @@ export default function EditPropertyScreen() {
           />
           {address.trim() !== initialAddress ? (
             <Text style={styles.note}>
-              Changing the address looks up the fire zone again — the rules that apply can change
+              Changing the address looks up the fire zone again; the rules that apply can change
               with it.
             </Text>
           ) : null}

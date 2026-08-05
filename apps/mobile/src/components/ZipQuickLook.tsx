@@ -58,9 +58,9 @@ const ZONE_MEANING: Record<FhszClass, string> = {
   moderate:
     'Defensible-space law applies in this zone. Good preparation here is cheaper than in the higher zones.',
   non_wildland:
-    'No mapped wildfire hazard zone at this point — water-wise landscaping and rebates are likely the bigger win.',
+    'No mapped wildfire hazard zone at this point; water-wise landscaping and rebates are likely the bigger win.',
   unknown:
-    'This point is outside the maps we host. A full address may still resolve — or sit outside California.',
+    'This point is outside the maps we host. A full address may still resolve, or sit outside California.',
 };
 
 export function ZipQuickLookCard({

@@ -40,14 +40,22 @@ export function Button({
       accessibilityState={{ disabled: disabled || loading }}
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }) => [
-        styles.button,
-        isPrimary && styles.buttonPrimary,
-        variant === 'secondary' && styles.buttonSecondary,
-        variant === 'quiet' && styles.buttonQuiet,
-        (disabled || loading) && styles.buttonDisabled,
-        pressed && styles.buttonPressed,
-      ]}
+      style={(state) => {
+        // The web adds a hover flag native platforms never set; feeling alive under the cursor
+        // is half of what makes a button read as a button in a browser.
+        const hovered = (state as { hovered?: boolean }).hovered ?? false;
+        return [
+          styles.button,
+          isPrimary && styles.buttonPrimary,
+          variant === 'secondary' && styles.buttonSecondary,
+          variant === 'quiet' && styles.buttonQuiet,
+          hovered && isPrimary && styles.buttonPrimaryHover,
+          hovered && variant === 'secondary' && styles.buttonSecondaryHover,
+          hovered && variant === 'quiet' && styles.buttonQuietHover,
+          (disabled || loading) && styles.buttonDisabled,
+          state.pressed && styles.buttonPressed,
+        ];
+      }}
     >
       {loading ? (
         <ActivityIndicator color={isPrimary ? colors.textInverse : colors.text} />
@@ -185,6 +193,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     minHeight: 40,
   },
+  buttonPrimaryHover: { backgroundColor: colors.accent, borderColor: colors.accent },
+  buttonSecondaryHover: { backgroundColor: colors.accentMuted },
+  buttonQuietHover: { backgroundColor: colors.surfaceMuted },
   buttonDisabled: { opacity: 0.45 },
   buttonPressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
   buttonText: { ...type.label, fontSize: 16, color: colors.ink },

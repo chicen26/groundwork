@@ -146,7 +146,7 @@ function Results({ result }: { result: LawnMeasurement }) {
       {result.showing_all_programs ? (
         <Text style={styles.allPrograms}>
           We could not work out which water utility serves this address, so all three are shown.
-          Check which one bills you — the rate and the cap are different.
+          Check which one bills you; the rate and the cap are different.
         </Text>
       ) : null}
 

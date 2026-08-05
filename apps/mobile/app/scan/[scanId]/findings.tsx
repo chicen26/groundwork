@@ -69,7 +69,7 @@ export default function FindingsScreen() {
 
         <Text style={styles.intro}>
           These are things our model flagged for review. It is advisory and it does get things wrong
-          — you know your property, so confirm what is real and wave off what is not.
+          You know your property, so confirm what is real and wave off what is not.
         </Text>
 
         {model.length === 0 ? (
@@ -115,7 +115,7 @@ export default function FindingsScreen() {
             <Text style={type.heading}>{HAZARD_LABELS[finding.hazard] ?? finding.hazard}</Text>
 
             <Text style={styles.confidence}>
-              {finding.needs_confirmation ? 'Possible — please confirm' : 'Flagged for review'}
+              {finding.needs_confirmation ? 'Possible: please confirm' : 'Flagged for review'}
               {finding.confidence !== null
                 ? ` · ${Math.round(finding.confidence * 100)}% confident`
                 : ''}
@@ -152,7 +152,7 @@ export default function FindingsScreen() {
                 {finding.status === 'confirmed'
                   ? 'You confirmed this.'
                   : finding.status === 'dismissed'
-                    ? 'You waved this off — it does not affect your score.'
+                    ? 'You waved this off. It does not affect your score.'
                     : 'Resolved.'}
               </Text>
             )}

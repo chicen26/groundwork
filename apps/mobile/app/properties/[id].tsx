@@ -123,7 +123,7 @@ export default function PropertyScreen() {
             <Text style={styles.caveat}>
               We could not determine your{' '}
               {geo.unresolved.map((key) => UNRESOLVED_LABELS[key] ?? key).join(' or ')}. Rather than
-              guess, we have left it blank — the wrong agency would send you to the wrong place.
+              guess, we have left it blank. The wrong agency would send you to the wrong place.
             </Text>
           ) : null}
         </Card>

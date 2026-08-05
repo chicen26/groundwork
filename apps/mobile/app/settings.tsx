@@ -52,7 +52,7 @@ export default function SettingsScreen() {
             {email ??
               (accountsEnabled
                 ? 'Signed in.'
-                : 'A private account on this device — no email, nothing shared.')}
+                : 'A private account on this device. No email, nothing shared.')}
           </Text>
         </Card>
 

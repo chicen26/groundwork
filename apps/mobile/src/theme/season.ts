@@ -22,7 +22,7 @@ export function currentSeason(now: Date = new Date()): Season {
   if (month >= 6 && month <= 10) {
     return {
       key: 'fire',
-      badge: '🔥 Fire season — a good month to clear defensible space',
+      badge: '🔥 Fire season: a good month to clear defensible space',
       heroColors: ['#1F1A0C', '#3A3018'],
     };
   }

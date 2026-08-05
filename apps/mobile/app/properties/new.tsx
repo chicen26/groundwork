@@ -109,7 +109,7 @@ export default function NewPropertyScreen() {
               placeholder="123 Diablo Road, Danville, CA"
             />
             <Text style={styles.help}>
-              Start typing and pick your address — or enter just a ZIP for a quick look.
+              Start typing and pick your address, or enter just a ZIP for a quick look.
             </Text>
 
             <Text style={[type.label, styles.spaced]}>Name it (optional)</Text>
@@ -135,7 +135,7 @@ export default function NewPropertyScreen() {
             <Card>
               <Text style={type.heading}>Place it yourself</Text>
               <Text style={styles.help}>
-                We could not look that address up. Enter the coordinates instead — your phone&apos;s
+                We could not look that address up. Enter the coordinates instead; your phone&apos;s
                 map app can copy them from a dropped pin.
               </Text>
               <TextInput

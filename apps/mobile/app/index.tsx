@@ -204,7 +204,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
 
             <Text style={styles.heroTagline}>
               Scan your yard once. Get one ranked plan that satisfies wildfire rules and
-              water-saving rebates — with the programs that pay for it.
+              water-saving rebates, with the programs that pay for it.
             </Text>
 
             <View style={styles.chipRow}>
@@ -258,7 +258,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
             <Step
               n="1"
               title="Walk your yard"
-              text="Seven photos, guided. Or answer a two-minute checklist — no camera needed."
+              text="Seven photos, guided. Or answer a two-minute checklist, no camera needed."
             />
             <Step
               n="2"

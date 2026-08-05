@@ -120,7 +120,7 @@ export default function CameraScreen() {
         </View>
 
         <Text style={styles.uploadNote}>
-          {uploading ? 'Uploading…' : 'We look at the photo after it uploads — no waiting.'}
+          {uploading ? 'Uploading…' : 'We look at the photo after it uploads. No waiting.'}
         </Text>
       </View>
     </View>

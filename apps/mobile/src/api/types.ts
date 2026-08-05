@@ -161,11 +161,11 @@ export const STATION_LABELS: Record<Station, string> = {
 export const STATION_HINTS: Record<Station, string> = {
   front_elevation: 'Stand back far enough to get the whole front, roof edge to ground.',
   left_side: 'Walk the side. Include where the wall meets the ground and any vents.',
-  right_side: 'Same on this side — wall, ground line, and vents.',
+  right_side: 'Same on this side: wall, ground line, and vents.',
   rear_elevation: 'The back of the house, including anything stacked against it.',
   deck_porch: 'Crouch to show the space underneath, not just the deck surface.',
   roofline: 'Aim up at the roof edge, gutters, and any limbs above them.',
-  perimeter_0_5ft: 'Close up on the strip right against the wall — mulch, plants, fencing.',
+  perimeter_0_5ft: 'Close up on the strip right against the wall: mulch, plants, fencing.',
 };
 
 export const FHSZ_LABELS: Record<FhszClass, string> = {

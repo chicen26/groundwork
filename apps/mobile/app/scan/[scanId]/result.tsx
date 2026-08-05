@@ -125,17 +125,38 @@ export default function ResultScreen() {
   const remaining = assessment.plan.filter((item) => !item.done);
   const done = assessment.plan.filter((item) => item.done);
   const bindingCount = remaining.filter((item) => item.rule_status === 'in_effect').length;
+  const band = scoreBand(assessment.score);
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         {error ? <ErrorNote message={error} /> : null}
 
-        <View style={styles.scoreBlock}>
-          <Text style={[styles.score, { color: scoreColor(assessment.score) }]}>
-            {assessment.score}
-          </Text>
-          <Text style={styles.scoreLabel}>Readiness score</Text>
+        {/* The dashboard: the number, its meaning, and the three counts that matter, at a glance. */}
+        <View style={styles.dashboard}>
+          <View style={[styles.scoreTile, { borderColor: scoreColor(assessment.score) }]}>
+            <Text style={[styles.score, { color: scoreColor(assessment.score) }]}>
+              {assessment.score}
+            </Text>
+            <Text style={[styles.scoreBandLabel, { color: scoreColor(assessment.score) }]}>
+              {band.label}
+            </Text>
+            <Text style={styles.scoreLabel}>Readiness score</Text>
+          </View>
+          <View style={styles.statColumn}>
+            <StatTile value={bindingCount} label="Required by law" tone={colors.critical} />
+            <StatTile
+              value={remaining.length - bindingCount}
+              label="Recommended"
+              tone={colors.water}
+            />
+            <StatTile value={done.length} label="Done" tone={colors.accent} />
+          </View>
+        </View>
+
+        <Card style={styles.meaningCard}>
+          <Text style={type.overline}>What this score means</Text>
+          <Text style={styles.meaningText}>{band.meaning}</Text>
           <Text style={styles.scoreExplain}>
             You are meeting {Math.round(assessment.breakdown.met_weight)} of{' '}
             {Math.round(assessment.breakdown.applicable_weight)} points of what applies to your
@@ -144,6 +165,21 @@ export default function ResultScreen() {
           <Pressable onPress={() => setShowWorking((v) => !v)}>
             <Text style={styles.link}>{showWorking ? 'Hide the working' : 'Show the working'}</Text>
           </Pressable>
+        </Card>
+
+        <View style={styles.tutorial}>
+          <Text style={styles.tutorialStep}>
+            <Text style={styles.tutorialNumber}>1</Text> Work down the list. Anything required by
+            law comes first.
+          </Text>
+          <Text style={styles.tutorialStep}>
+            <Text style={styles.tutorialNumber}>2</Text> Mark items done as you finish them and
+            watch the score move.
+          </Text>
+          <Text style={styles.tutorialStep}>
+            <Text style={styles.tutorialNumber}>3</Text> When it looks good, create the PDF for your
+            records or your insurer.
+          </Text>
         </View>
 
         {showWorking ? (
@@ -216,7 +252,7 @@ export default function ResultScreen() {
             <Button
               title={
                 item.score_if_done !== null
-                  ? `Mark done — score goes to ${item.score_if_done}`
+                  ? `Mark done · score goes to ${item.score_if_done}`
                   : 'Mark done'
               }
               variant="secondary"
@@ -262,7 +298,7 @@ export default function ResultScreen() {
           />
         </Card>
 
-        <Button title="Back to my property" variant="quiet" onPress={() => router.replace('/')} />
+        <Button title="Back to my property" onPress={() => router.replace('/')} />
 
         <Disclaimer text={assessment.disclaimer} />
       </ScrollView>
@@ -270,19 +306,97 @@ export default function ResultScreen() {
   );
 }
 
+/** The band a score falls in, and the sentence that tells you what living there means. */
+function scoreBand(score: number): { label: string; meaning: string } {
+  if (score >= 80) {
+    return {
+      label: 'Strong',
+      meaning:
+        'Your yard broadly meets the rules that apply to it. Keep it maintained, especially through fire season, and re-check after windstorms.',
+    };
+  }
+  if (score >= 60) {
+    return {
+      label: 'Getting there',
+      meaning:
+        'Most of what applies is met, but real gaps remain. The items below close them, starting with anything the law requires today.',
+    };
+  }
+  if (score >= 40) {
+    return {
+      label: 'Needs work',
+      meaning:
+        'Several rules that apply to your property are not met yet. Start with the items required by law; they matter most to inspectors and insurers.',
+    };
+  }
+  return {
+    label: 'At risk',
+    meaning:
+      'Most of what applies to your property is unmet. The plan below is ordered so the highest-stakes work comes first; even one afternoon moves this number.',
+  };
+}
+
+function StatTile({ value, label, tone }: { value: number; label: string; tone: string }) {
+  return (
+    <View style={styles.statTile}>
+      <Text style={[styles.statValue, { color: tone }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg },
+  content: {
+    padding: spacing.lg,
+    maxWidth: 680,
+    width: '100%',
+    alignSelf: 'center',
+  },
   padded: { padding: spacing.lg },
-  scoreBlock: { alignItems: 'center', marginBottom: spacing.lg },
-  score: { fontSize: 76, fontWeight: '800', letterSpacing: -2 },
-  scoreLabel: { ...type.label, color: colors.textMuted },
+  dashboard: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
+  scoreTile: {
+    flex: 1.3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 2,
+    padding: spacing.md,
+    gap: 2,
+  },
+  score: { fontSize: 64, fontWeight: '800', letterSpacing: -2, lineHeight: 68 },
+  scoreBandLabel: { ...type.label, fontSize: 15 },
+  scoreLabel: { ...type.caption, color: colors.textMuted },
+  statColumn: { flex: 1, gap: spacing.sm },
+  statTile: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: spacing.sm,
+    justifyContent: 'center',
+  },
+  statValue: { ...type.title, fontSize: 22, lineHeight: 26 },
+  statLabel: { ...type.caption, fontSize: 11.5, lineHeight: 15, color: colors.textMuted },
+  meaningCard: { gap: spacing.xs },
+  meaningText: { ...type.body, color: colors.text },
   scoreExplain: {
     ...type.caption,
     color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
   link: { ...type.label, color: colors.accent, marginTop: spacing.sm },
+  tutorial: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  tutorialStep: { ...type.caption, color: colors.textMuted, lineHeight: 20 },
+  tutorialNumber: { fontWeight: '800', color: colors.accent },
   formula: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
   rulebook: {
     ...type.caption,

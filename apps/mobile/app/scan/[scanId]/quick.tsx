@@ -1,17 +1,17 @@
 /**
- * Quick Check — a real assessment without the camera.
+ * Quick Check: a real assessment without the camera.
  *
  * The full walk is seven photographs and twelve questions, and that is the right product for
  * someone who has decided to act. It is the wrong product for someone deciding whether to care.
  *
- * This exists because the checklist alone already covers every rule in the rulebook — that was a
- * deliberate design constraint, not a fallback — so answering the questions produces a genuine
- * score, a genuine plan, and genuine citations, with no photograph taken. The only thing missing is
- * the model's second opinion, and the screen says so rather than implying the result is lesser than
+ * This exists because the checklist alone already covers every rule in the rulebook (a deliberate
+ * design constraint, not a fallback), so answering the questions produces a genuine score, a
+ * genuine plan, and genuine citations, with no photograph taken. The only thing missing is the
+ * model's second opinion, and the screen says so rather than implying the result is lesser than
  * it is.
  *
- * Two audiences this actually serves: someone who wants an answer in two minutes on the sofa, and
- * anyone whose phone camera we cannot use. Both convert to a full scan afterwards if they want to.
+ * One question fills the screen at a time, centred, with the progress bar as the only chrome:
+ * a quiz should feel like a conversation, not a form.
  */
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -85,68 +85,79 @@ export default function QuickCheckScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {error ? <ErrorNote message={error} /> : null}
 
-        <View style={styles.progressTrack}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${(Math.min(index, questions.length) / questions.length) * 100}%` },
-            ]}
-          />
+        <View style={styles.progressRow}>
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${(Math.min(index, questions.length) / questions.length) * 100}%` },
+              ]}
+            />
+          </View>
+          <Text style={styles.progressLabel}>
+            {Math.min(index + (done ? 0 : 1), questions.length)}/{questions.length}
+          </Text>
         </View>
-        <Text style={styles.progressLabel}>
-          {Math.min(index + (done ? 0 : 1), questions.length)} of {questions.length}
-        </Text>
 
-        {done ? (
-          <Card>
-            <Text style={type.title}>That is everything</Text>
-            <Text style={styles.body}>
-              Your plan is built from the same rulebook, with the same citations, as a full scan.
-              The one thing it does not have is our model&apos;s second opinion on your photographs
-              — you can add that any time by running a full scan on the same property.
-            </Text>
-            <Button title="Show me my plan" onPress={finish} loading={finishing} />
-          </Card>
-        ) : current ? (
-          <Card>
-            <Text style={styles.zone}>{zoneLabel(current.zone)}</Text>
-            <Text style={styles.prompt}>{current.prompt}</Text>
-            <Text style={styles.help}>{current.help_text}</Text>
+        <View style={styles.stage}>
+          {done ? (
+            <Card style={styles.questionCard}>
+              <Text style={type.title}>That&apos;s Everything!</Text>
+              <Text style={styles.body}>
+                Your plan is built from the same rulebook, with the same citations, as a full scan.
+                The one thing it does not have is our model&apos;s second opinion on your
+                photographs. You can add that any time by running a full scan on the same property.
+              </Text>
+              <Button title="Show me my plan" onPress={finish} loading={finishing} />
+            </Card>
+          ) : current ? (
+            <Card style={styles.questionCard}>
+              <Text style={styles.zone}>{zoneLabel(current.zone)}</Text>
+              <Text style={styles.prompt}>{current.prompt}</Text>
+              <Text style={styles.help}>{current.help_text}</Text>
 
-            <View style={styles.answers}>
+              <View style={styles.answers}>
+                <Pressable
+                  accessibilityRole="button"
+                  style={[styles.answerButton, styles.yes]}
+                  onPress={() => answer(true)}
+                >
+                  <Text style={styles.answerTextLight}>Yes</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  style={[styles.answerButton, styles.no]}
+                  onPress={() => answer(false)}
+                >
+                  <Text style={styles.answerTextLight}>No</Text>
+                </Pressable>
+              </View>
+
               <Pressable
                 accessibilityRole="button"
-                style={[styles.answerButton, styles.yes]}
-                onPress={() => answer(true)}
+                style={(state) => [
+                  styles.skipButton,
+                  ((state as { hovered?: boolean }).hovered ?? false) && styles.skipButtonHover,
+                  state.pressed && styles.skipButtonPressed,
+                ]}
+                onPress={() => setIndex((prev) => prev + 1)}
               >
-                <Text style={styles.answerTextLight}>Yes</Text>
+                <Text style={styles.skipText}>Skip</Text>
               </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                style={[styles.answerButton, styles.no]}
-                onPress={() => answer(false)}
-              >
-                <Text style={styles.answerTextLight}>No</Text>
-              </Pressable>
-            </View>
+            </Card>
+          ) : null}
 
-            <Pressable onPress={() => setIndex((prev) => prev + 1)}>
-              <Text style={styles.skip}>I am not sure — skip this one</Text>
-            </Pressable>
-          </Card>
-        ) : null}
-
-        {index > 0 && !done ? (
-          <Button
-            title="Back"
-            variant="quiet"
-            onPress={() => setIndex((prev) => Math.max(0, prev - 1))}
-          />
-        ) : null}
+          {index > 0 && !done ? (
+            <Button
+              title="Back"
+              variant="quiet"
+              onPress={() => setIndex((prev) => Math.max(0, prev - 1))}
+            />
+          ) : null}
+        </View>
 
         <Text style={styles.note}>
-          Answered so far: {Object.keys(answers).length}. Skipped questions simply do not count
-          either way — we never assume a hazard you did not confirm.
+          Skipped questions do not count either way. We never assume a hazard you did not confirm.
         </Text>
       </ScrollView>
     </Screen>
@@ -167,34 +178,38 @@ function zoneLabel(zone: string): string {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg },
+  content: {
+    padding: spacing.lg,
+    flexGrow: 1,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center',
+  },
   padded: { padding: spacing.lg },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   progressTrack: {
-    height: 6,
+    flex: 1,
+    height: 8,
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceMuted,
     overflow: 'hidden',
   },
-  progressFill: { height: '100%', backgroundColor: colors.accent },
-  progressLabel: {
-    ...type.caption,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-    marginBottom: spacing.md,
-  },
+  progressFill: { height: '100%', backgroundColor: colors.accent, borderRadius: radius.pill },
+  progressLabel: { ...type.label, color: colors.textMuted },
+  // The question owns the middle of the screen; everything else keeps to the edges.
+  stage: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.lg },
+  questionCard: { padding: spacing.lg, marginBottom: spacing.sm },
   zone: {
-    ...type.caption,
+    ...type.overline,
     color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   prompt: { ...type.title, marginTop: spacing.sm },
   help: { ...type.body, color: colors.textMuted, marginTop: spacing.sm },
   body: { ...type.body, color: colors.textMuted, marginVertical: spacing.md },
-  answers: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  answers: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl },
   answerButton: {
     flex: 1,
-    minHeight: 64,
+    minHeight: 68,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -202,6 +217,16 @@ const styles = StyleSheet.create({
   yes: { backgroundColor: colors.critical },
   no: { backgroundColor: colors.accent },
   answerTextLight: { ...type.heading, color: colors.textInverse },
-  skip: { ...type.caption, color: colors.textMuted, textAlign: 'center', marginTop: spacing.md },
-  note: { ...type.caption, color: colors.textMuted, marginTop: spacing.lg },
+  skipButton: {
+    marginTop: spacing.md,
+    minHeight: 52,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.water,
+  },
+  skipButtonHover: { backgroundColor: '#194F5D' },
+  skipButtonPressed: { opacity: 0.85 },
+  skipText: { ...type.heading, color: colors.textInverse },
+  note: { ...type.caption, color: colors.textMuted, textAlign: 'center' },
 });
