@@ -26,6 +26,7 @@ from app.routers import (
     resources,
     rules,
     scans,
+    stats,
     water,
 )
 from app.rules.rulebook import load_rulebook
@@ -161,6 +162,7 @@ def create_app() -> FastAPI:
     app.include_router(plants.router, prefix=API_PREFIX)
     app.include_router(resources.router, prefix=API_PREFIX)
     app.include_router(reports.router, prefix=API_PREFIX)
+    app.include_router(stats.router, prefix=API_PREFIX)
 
     return app
 

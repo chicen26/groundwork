@@ -52,6 +52,17 @@ export interface ZipQuickLook {
   approximate: boolean;
 }
 
+/** Aggregate impact across all accounts. Totals only; no per-user data. */
+export interface ImpactStats {
+  properties: number;
+  assessments: number;
+  plan_items_done: number;
+  hazards_addressed: number;
+  lawn_sqft_measured: number;
+  annual_gallons_saved: number;
+  rebate_dollars_identified: number;
+}
+
 export interface Property {
   id: string;
   address: string;

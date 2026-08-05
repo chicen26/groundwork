@@ -28,10 +28,12 @@ import {
   Loading,
   Screen,
 } from '@/components/ui';
+import { useT } from '@/i18n';
 import { useCredentials } from '@/session';
 import { colors, radius, scoreColor, severityColor, shadow, spacing, type } from '@/theme';
 
 export default function ResultScreen() {
+  const t = useT();
   const { scanId, assessmentId } = useLocalSearchParams<{
     scanId: string;
     assessmentId?: string;
@@ -157,7 +159,7 @@ export default function ResultScreen() {
       </Screen>
     );
   }
-  if (!assessment) return <Loading label="Working out your plan" />;
+  if (!assessment) return <Loading label={t('Working out your plan')} />;
 
   const remaining = assessment.plan.filter((item) => !item.done);
   const done = assessment.plan.filter((item) => item.done);
@@ -175,7 +177,10 @@ export default function ResultScreen() {
         {lastChange && lastChange.to !== lastChange.from ? (
           <View style={styles.changeBanner}>
             <Text style={styles.changeText}>
-              Nice work. Your score moved from {lastChange.from} to {lastChange.to}.
+              {t('Nice work. Your score moved from {from} to {to}.', {
+                from: lastChange.from,
+                to: lastChange.to,
+              })}
             </Text>
           </View>
         ) : null}
@@ -193,33 +198,34 @@ export default function ResultScreen() {
               {assessment.score}
             </Text>
             <Text style={[styles.scoreBandLabel, { color: scoreColor(assessment.score) }]}>
-              {band.label}
+              {t(band.label)}
             </Text>
-            <Text style={styles.scoreLabel}>Readiness score</Text>
+            <Text style={styles.scoreLabel}>{t('Readiness score')}</Text>
           </View>
           <View style={[styles.statColumn, highlight('stats')]}>
-            <StatTile value={bindingCount} label="Required by law" tone={colors.critical} />
+            <StatTile value={bindingCount} label={t('Required by law')} tone={colors.critical} />
             <StatTile
               value={remaining.length - bindingCount}
-              label="Recommended"
+              label={t('Recommended')}
               tone={colors.water}
             />
-            <StatTile value={done.length} label="Done" tone={colors.accent} />
+            <StatTile value={done.length} label={t('Done')} tone={colors.accent} />
           </View>
         </View>
 
         <View {...trackSection('meaning')}>
           <Card style={[styles.meaningCard, highlight('meaning')]}>
-            <Text style={type.overline}>What this score means</Text>
-            <Text style={styles.meaningText}>{band.meaning}</Text>
+            <Text style={type.overline}>{t('What this score means')}</Text>
+            <Text style={styles.meaningText}>{t(band.meaning)}</Text>
             <Text style={styles.scoreExplain}>
-              You are meeting {Math.round(assessment.breakdown.met_weight)} of{' '}
-              {Math.round(assessment.breakdown.applicable_weight)} points of what applies to your
-              property.
+              {t('You are meeting {met} of {total} points of what applies to your property.', {
+                met: Math.round(assessment.breakdown.met_weight),
+                total: Math.round(assessment.breakdown.applicable_weight),
+              })}
             </Text>
             <Pressable onPress={() => setShowWorking((v) => !v)}>
               <Text style={styles.link}>
-                {showWorking ? 'Hide the working' : 'Show the working'}
+                {showWorking ? t('Hide the working') : t('Show the working')}
               </Text>
             </Pressable>
           </Card>
@@ -227,15 +233,17 @@ export default function ResultScreen() {
 
         {tourStep === null ? (
           <Pressable onPress={() => setTourStep(0)}>
-            <Text style={styles.tourLink}>New here? Take the 30-second tour</Text>
+            <Text style={styles.tourLink}>{t('New here? Take the 30-second tour')}</Text>
           </Pressable>
         ) : null}
 
         {showWorking ? (
           <Card>
-            <Text style={type.label}>How this is calculated</Text>
+            <Text style={type.label}>{t('How this is calculated')}</Text>
             <Text style={styles.formula}>{assessment.breakdown.formula}</Text>
-            <Text style={styles.rulebook}>Rulebook {assessment.rulebook_version}</Text>
+            <Text style={styles.rulebook}>
+              {t('Rulebook {version}', { version: assessment.rulebook_version })}
+            </Text>
             {assessment.breakdown.rules.map((rule) => (
               <View key={rule.rule_id} style={styles.workingRow}>
                 <Text
@@ -263,8 +271,10 @@ export default function ResultScreen() {
         <View {...trackSection('plan')} style={highlight('plan')}>
           {bindingCount > 0 ? (
             <Text style={styles.leadIn}>
-              {bindingCount} of these {bindingCount === 1 ? 'is' : 'are'} required by law today.
-              Those come first.
+              {t('{n} of these {isAre} required by law today. Those come first.', {
+                n: bindingCount,
+                isAre: bindingCount === 1 ? t('is') : t('are'),
+              })}
             </Text>
           ) : null}
 
@@ -290,11 +300,11 @@ export default function ResultScreen() {
 
               <View style={styles.metaRow}>
                 {item.effort_hours !== null ? (
-                  <Text style={styles.meta}>About {item.effort_hours}h</Text>
+                  <Text style={styles.meta}>{t('About {n}h', { n: item.effort_hours })}</Text>
                 ) : null}
                 {item.cost_est_usd !== null ? (
                   <Text style={styles.meta}>
-                    {item.cost_est_usd === 0 ? 'No cost' : `~$${item.cost_est_usd}`}
+                    {item.cost_est_usd === 0 ? t('No cost') : `~$${item.cost_est_usd}`}
                   </Text>
                 ) : null}
               </View>
@@ -302,8 +312,8 @@ export default function ResultScreen() {
               <Button
                 title={
                   item.score_if_done !== null
-                    ? `Mark done · score goes to ${item.score_if_done}`
-                    : 'Mark done'
+                    ? t('Mark done · score goes to {score}', { score: item.score_if_done })
+                    : t('Mark done')
                 }
                 variant="secondary"
                 loading={busyId === item.id}
@@ -314,10 +324,11 @@ export default function ResultScreen() {
 
           {remaining.length === 0 ? (
             <Card>
-              <Text style={type.heading}>Nothing outstanding</Text>
+              <Text style={type.heading}>{t('Nothing outstanding')}</Text>
               <Text style={styles.itemDetail}>
-                Every rule that applies to your property is met, based on what you photographed and
-                answered.
+                {t(
+                  'Every rule that applies to your property is met, based on what you photographed and answered.',
+                )}
               </Text>
             </Card>
           ) : null}
@@ -325,7 +336,7 @@ export default function ResultScreen() {
 
         {done.length > 0 ? (
           <>
-            <Text style={styles.leadIn}>Done</Text>
+            <Text style={styles.leadIn}>{t('Done')}</Text>
             {done.map((item) => (
               <Card key={item.id} style={styles.doneCard}>
                 <Text style={styles.doneTitle}>{item.title}</Text>
@@ -336,14 +347,14 @@ export default function ResultScreen() {
 
         <View {...trackSection('pdf')}>
           <Card style={highlight('pdf')}>
-            <Text style={type.heading}>Documentation for your insurer</Text>
+            <Text style={type.heading}>{t('Documentation for your insurer')}</Text>
             <Text style={styles.itemDetail}>
-              A PDF of this assessment: your zone, your score, the work you have completed with its
-              photographs, and what is still outstanding. It is your own documentation, not an
-              inspection or a certification.
+              {t(
+                'A PDF of this assessment: your zone, your score, the work you have completed with its photographs, and what is still outstanding. It is your own documentation, not an inspection or a certification.',
+              )}
             </Text>
             <Button
-              title="Create the document"
+              title={t('Create the document')}
               variant="secondary"
               onPress={downloadReport}
               loading={downloading}
@@ -351,7 +362,7 @@ export default function ResultScreen() {
           </Card>
         </View>
 
-        <Button title="Back to my property" onPress={() => router.replace('/')} />
+        <Button title={t('Back to my property')} onPress={() => router.replace('/')} />
 
         <Disclaimer text={assessment.disclaimer} />
       </ScrollView>
@@ -359,16 +370,16 @@ export default function ResultScreen() {
       {tourStep !== null ? (
         <View style={styles.tourCard}>
           <Text style={type.overline}>
-            Tour · {tourStep + 1} of {TOUR_STEPS.length}
+            {t('Tour · {n} of {total}', { n: tourStep + 1, total: TOUR_STEPS.length })}
           </Text>
-          <Text style={styles.tourTitle}>{TOUR_STEPS[tourStep].title}</Text>
-          <Text style={styles.tourText}>{TOUR_STEPS[tourStep].text}</Text>
+          <Text style={styles.tourTitle}>{t(TOUR_STEPS[tourStep].title)}</Text>
+          <Text style={styles.tourText}>{t(TOUR_STEPS[tourStep].text)}</Text>
           <View style={styles.tourButtons}>
             <Pressable onPress={endTour} hitSlop={8}>
-              <Text style={styles.tourSkip}>Skip</Text>
+              <Text style={styles.tourSkip}>{t('Skip')}</Text>
             </Pressable>
             <Button
-              title={tourStep === TOUR_STEPS.length - 1 ? 'Got it' : 'Next'}
+              title={tourStep === TOUR_STEPS.length - 1 ? t('Got it') : t('Next')}
               onPress={() =>
                 tourStep === TOUR_STEPS.length - 1 ? endTour() : setTourStep(tourStep + 1)
               }

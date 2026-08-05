@@ -23,11 +23,12 @@ import {
 } from 'react-native';
 
 import { api } from '@/api/client';
-import type { FhszClass, Property } from '@/api/types';
+import type { FhszClass, ImpactStats, Property } from '@/api/types';
 import { BrandMark } from '@/components/BrandMark';
 import { PrivacyNote } from '@/components/PrivacyNote';
 import { Button, Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
 import { ZipQuickLookCard, useZipQuickLook } from '@/components/ZipQuickLook';
+import { useT } from '@/i18n';
 import { newUserId, useSession } from '@/session';
 import { colors, fonts, radius, shadow, spacing, type } from '@/theme';
 import { currentSeason } from '@/theme/season';
@@ -53,6 +54,8 @@ export default function HomeScreen() {
   // Reload on focus: coming back from a finished scan should show the new state, not a stale list.
   useFocusEffect(load);
 
+  const t = useT();
+
   if (sessionLoading) return <Loading />;
 
   if (!credentials) {
@@ -71,7 +74,7 @@ export default function HomeScreen() {
     );
   }
 
-  if (!properties) return <Loading label="Loading your properties" />;
+  if (!properties) return <Loading label={t('Loading your properties')} />;
 
   return (
     <Screen>
@@ -100,21 +103,22 @@ export default function HomeScreen() {
         }
         ListHeaderComponent={
           properties.length > 0 ? (
-            <Text style={[type.overline, styles.listOverline]}>Your properties</Text>
+            <Text style={[type.overline, styles.listOverline]}>{t('Your properties')}</Text>
           ) : null
         }
         ListEmptyComponent={
           <Card>
-            <Text style={type.heading}>No properties yet</Text>
+            <Text style={type.heading}>{t('No properties yet')}</Text>
             <Text style={styles.body}>
-              Add your address and we will look up its fire hazard zone, then walk you through
-              photographing the yard.
+              {t(
+                'Add your address and we will look up its fire hazard zone, then walk you through photographing the yard.',
+              )}
             </Text>
           </Card>
         }
         ListFooterComponent={
           <Link href="/properties/new" asChild>
-            <Button title="Add a property" onPress={() => router.push('/properties/new')} />
+            <Button title={t('Add a property')} onPress={() => router.push('/properties/new')} />
           </Link>
         }
         renderItem={({ item }) => (
@@ -157,10 +161,16 @@ function railColor(fhsz: FhszClass): string {
 }
 
 function Welcome({ onStart }: { onStart: () => void }) {
+  const t = useT();
   const [zipInput, setZipInput] = useState('');
   const [zip, setZip] = useState<string | null>(null);
   const quickLook = useZipQuickLook(zip);
   const canPeek = /^\d{5}$/.test(zipInput.trim());
+
+  const [impact, setImpact] = useState<ImpactStats | null>(null);
+  useEffect(() => {
+    api.impactStats().then(setImpact);
+  }, []);
 
   // The hero settles into place on arrival — one soft movement, then stillness.
   const entrance = useRef(new Animated.Value(0)).current;
@@ -196,26 +206,27 @@ function Welcome({ onStart }: { onStart: () => void }) {
             </View>
 
             <Text style={styles.heroTitle}>
-              <Text style={styles.heroEmber}>Fire-safe.</Text>{' '}
-              <Text style={styles.heroWater}>Water-wise.</Text>
+              <Text style={styles.heroEmber}>{t('Fire-safe.')}</Text>{' '}
+              <Text style={styles.heroWater}>{t('Water-wise.')}</Text>
               {'\n'}
-              <Text style={styles.heroCream}>One plan for your yard.</Text>
+              <Text style={styles.heroCream}>{t('One plan for your yard.')}</Text>
             </Text>
 
             <Text style={styles.heroTagline}>
-              Scan your yard once. Get one ranked plan that satisfies wildfire rules and
-              water-saving rebates, with the programs that pay for it.
+              {t(
+                'Scan your yard once. Get one ranked plan that satisfies wildfire rules and water-saving rebates, with the programs that pay for it.',
+              )}
             </Text>
 
             <View style={styles.chipRow}>
-              <HeroChip icon="🔥" label="Defensible space" />
-              <HeroChip icon="💧" label="Lawn rebates" />
-              <HeroChip icon="🧾" label="One ranked plan" />
+              <HeroChip icon="🔥" label={t('Defensible space')} />
+              <HeroChip icon="💧" label={t('Lawn rebates')} />
+              <HeroChip icon="🧾" label={t('One ranked plan')} />
             </View>
 
             {season.badge ? (
               <View style={styles.seasonBadge}>
-                <Text style={styles.seasonBadgeText}>{season.badge}</Text>
+                <Text style={styles.seasonBadgeText}>{t(season.badge)}</Text>
               </View>
             ) : null}
           </Animated.View>
@@ -225,7 +236,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
           {/* The ZIP card straddles the hero's edge: the first thing your eye lands on is the
               thing you can actually do. */}
           <View style={styles.zipCard}>
-            <Text style={type.overline}>Curious? Start with just your ZIP</Text>
+            <Text style={type.overline}>{t('Curious? Start with just your ZIP')}</Text>
             <View style={styles.zipRow}>
               <TextInput
                 style={styles.zipInput}
@@ -238,7 +249,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
                 onSubmitEditing={() => canPeek && setZip(zipInput.trim())}
               />
               <Button
-                title={quickLook.loading ? 'Looking…' : 'Take a look'}
+                title={quickLook.loading ? t('Looking…') : t('Take a look')}
                 variant="secondary"
                 onPress={() => setZip(zipInput.trim())}
                 disabled={!canPeek || quickLook.loading}
@@ -250,33 +261,70 @@ function Welcome({ onStart }: { onStart: () => void }) {
           {quickLook.result ? (
             <ZipQuickLookCard
               look={quickLook.result}
-              ctaHint="Get started below with your full address"
+              ctaHint={t('Get started below with your full address')}
             />
           ) : null}
 
           <View style={styles.steps}>
             <Step
               n="1"
-              title="Walk your yard"
-              text="Seven photos, guided. Or answer a two-minute checklist, no camera needed."
+              title={t('Walk your yard')}
+              text={t('Seven photos, guided. Or answer a two-minute checklist, no camera needed.')}
             />
             <Step
               n="2"
-              title="See what matters"
-              text="Hazards ranked against the actual rules for your zone, each with its citation."
+              title={t('See what matters')}
+              text={t(
+                'Hazards ranked against the actual rules for your zone, each with its citation.',
+              )}
             />
             <Step
               n="3"
-              title="Get paid to fix it"
-              text="Lawn-replacement rebates from your own water utility, calculated for your yard."
+              title={t('Get paid to fix it')}
+              text={t(
+                'Lawn-replacement rebates from your own water utility, calculated for your yard.',
+              )}
             />
           </View>
 
-          <Button title="Get started" onPress={onStart} />
+          {impact && impact.assessments > 0 ? (
+            <View style={styles.impactBand}>
+              <Text style={[type.overline, styles.impactTitle]}>
+                {t('So far, with our testers')}
+              </Text>
+              <View style={styles.impactRow}>
+                <Text style={styles.impactStat}>
+                  {t('{n} yards assessed', { n: impact.assessments.toLocaleString() })}
+                </Text>
+                {impact.plan_items_done > 0 ? (
+                  <Text style={styles.impactStat}>
+                    {t('{n} tasks completed', { n: impact.plan_items_done.toLocaleString() })}
+                  </Text>
+                ) : null}
+                {impact.rebate_dollars_identified > 0 ? (
+                  <Text style={styles.impactStat}>
+                    {t('${n} in rebates identified', {
+                      n: impact.rebate_dollars_identified.toLocaleString(),
+                    })}
+                  </Text>
+                ) : null}
+                {impact.annual_gallons_saved > 0 ? (
+                  <Text style={styles.impactStat}>
+                    {t('{n} gallons/yr in savings mapped', {
+                      n: impact.annual_gallons_saved.toLocaleString(),
+                    })}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+
+          <Button title={t('Get started')} onPress={onStart} />
           <PrivacyNote />
           <Text style={styles.fineprint}>
-            Groundwork gives educational guidance based on published state and local requirements.
-            It is not an official inspection and does not provide evacuation advice.
+            {t(
+              'Groundwork gives educational guidance based on published state and local requirements. It is not an official inspection and does not provide evacuation advice.',
+            )}
           </Text>
         </View>
       </ScrollView>
@@ -410,6 +458,15 @@ const styles = StyleSheet.create({
   stepBody: { flex: 1, gap: 2 },
   stepText: { ...type.body, fontSize: 15, lineHeight: 21, color: colors.textMuted },
   fineprint: { ...type.caption, color: colors.textMuted },
+  impactBand: {
+    backgroundColor: colors.accentMuted,
+    borderRadius: radius.lg,
+    padding: spacing.md + 2,
+    gap: spacing.sm,
+  },
+  impactTitle: { color: colors.accent },
+  impactRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, rowGap: spacing.xs },
+  impactStat: { ...type.label, color: colors.accent },
   padded: { padding: spacing.lg },
   list: { padding: spacing.lg, maxWidth: 720, width: '100%', alignSelf: 'center' },
   listOverline: { color: colors.textMuted, marginBottom: spacing.md },

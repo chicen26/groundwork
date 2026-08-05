@@ -19,10 +19,12 @@ import {
 
 import { BrandMark } from '@/components/BrandMark';
 import { Button, Card, ErrorNote, Screen } from '@/components/ui';
+import { useT } from '@/i18n';
 import { useSession } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function SignInScreen() {
+  const t = useT();
   const { signInWithPassword, signUpWithPassword } = useSession();
   const router = useRouter();
 
@@ -66,19 +68,19 @@ export default function SignInScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <BrandMark size={44} flame={colors.ember} drop={colors.water} />
           <Text style={type.title}>
-            {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+            {mode === 'signin' ? t('Welcome back') : t('Create your account')}
           </Text>
           <Text style={styles.sub}>
             {mode === 'signin'
-              ? 'Your properties, scans, and plan are where you left them.'
-              : 'Eight characters or more for the password. Your data stays yours.'}
+              ? t('Your properties, scans, and plan are where you left them.')
+              : t('Eight characters or more for the password. Your data stays yours.')}
           </Text>
 
           {error ? <ErrorNote message={error} /> : null}
           {notice ? <Text style={styles.notice}>{notice}</Text> : null}
 
           <Card style={styles.card}>
-            <Text style={type.label}>Email</Text>
+            <Text style={type.label}>{t('Email')}</Text>
             <TextInput
               style={styles.input}
               value={email}
@@ -90,7 +92,7 @@ export default function SignInScreen() {
               keyboardType="email-address"
               autoComplete="email"
             />
-            <Text style={[type.label, styles.spaced]}>Password</Text>
+            <Text style={[type.label, styles.spaced]}>{t('Password')}</Text>
             <TextInput
               style={styles.input}
               value={password}
@@ -104,13 +106,15 @@ export default function SignInScreen() {
           </Card>
 
           <Button
-            title={mode === 'signin' ? 'Sign in' : 'Create account'}
+            title={mode === 'signin' ? t('Sign in') : t('Create account')}
             onPress={submit}
             loading={busy}
             disabled={!ready}
           />
           <Button
-            title={mode === 'signin' ? 'New here? Create an account' : 'Have an account? Sign in'}
+            title={
+              mode === 'signin' ? t('New here? Create an account') : t('Have an account? Sign in')
+            }
             variant="quiet"
             onPress={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
           />

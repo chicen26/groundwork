@@ -18,6 +18,7 @@ import {
 
 import type { FhszClass, RuleStatus } from '@/api/types';
 import { FHSZ_LABELS } from '@/api/types';
+import { useT } from '@/i18n';
 import { colors, radius, shadow, spacing, type } from '@/theme';
 
 export function Screen({
@@ -101,6 +102,7 @@ export function Button({
  * they are breaking a rule that does not exist yet.
  */
 export function LegalStatusBadge({ status }: { status: RuleStatus | null }) {
+  const t = useT();
   if (!status) return null;
 
   const config: Record<RuleStatus, { label: string; bg: string; fg: string }> = {
@@ -124,12 +126,13 @@ export function LegalStatusBadge({ status }: { status: RuleStatus | null }) {
 
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={[styles.badgeText, { color: fg }]}>{label}</Text>
+      <Text style={[styles.badgeText, { color: fg }]}>{t(label)}</Text>
     </View>
   );
 }
 
 export function ZoneBadge({ fhsz }: { fhsz: FhszClass }) {
+  const t = useT();
   const tone: Record<FhszClass, { fg: string; bg: string }> = {
     very_high: { fg: colors.critical, bg: '#F9E4E2' },
     high: { fg: colors.high, bg: '#F8E8DC' },
@@ -142,17 +145,18 @@ export function ZoneBadge({ fhsz }: { fhsz: FhszClass }) {
     <View style={[styles.zoneBadge, { backgroundColor: bg }]}>
       <View style={[styles.zoneDot, { backgroundColor: fg }]} />
       <Text style={[styles.zoneBadgeText, { color: fg }]}>
-        {FHSZ_LABELS[fhsz]} fire hazard zone
+        {t('{zone} fire hazard zone', { zone: t(FHSZ_LABELS[fhsz]) })}
       </Text>
     </View>
   );
 }
 
-export function Loading({ label = 'Loading' }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
+  const t = useT();
   return (
     <View style={styles.centred}>
       <ActivityIndicator color={colors.accent} />
-      <Text style={styles.mutedText}>{label}</Text>
+      <Text style={styles.mutedText}>{label ?? t('Loading')}</Text>
     </View>
   );
 }

@@ -21,10 +21,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api } from '@/api/client';
 import type { Question } from '@/api/types';
 import { Button, Card, ErrorNote, Loading, Screen } from '@/components/ui';
+import { CHECKLIST_ES, useLocale, useT } from '@/i18n';
 import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function QuickCheckScreen() {
+  const t = useT();
+  const { locale } = useLocale();
   const { scanId } = useLocalSearchParams<{ scanId: string }>();
   const credentials = useCredentials();
   const router = useRouter();
@@ -76,7 +79,14 @@ export default function QuickCheckScreen() {
       </Screen>
     );
   }
-  if (!questions) return <Loading label="Loading the questions" />;
+  if (!questions) return <Loading label={t('Loading the questions')} />;
+
+  // Question text is authored server-side in English; Spanish comes from a client dictionary
+  // keyed by question id, so the server stays the single canonical source of what was asked.
+  const localized = (question: Question) =>
+    locale === 'es' && CHECKLIST_ES[question.id]
+      ? { prompt: CHECKLIST_ES[question.id].prompt, help: CHECKLIST_ES[question.id].help }
+      : { prompt: question.prompt, help: question.help_text };
 
   const done = index >= questions.length;
 
@@ -102,19 +112,19 @@ export default function QuickCheckScreen() {
         <View style={styles.stage}>
           {done ? (
             <Card style={styles.questionCard}>
-              <Text style={type.title}>That&apos;s Everything!</Text>
+              <Text style={type.title}>{t("That's Everything!")}</Text>
               <Text style={styles.body}>
-                Your plan is built from the same rulebook, with the same citations, as a full scan.
-                The one thing it does not have is our model&apos;s second opinion on your
-                photographs. You can add that any time by running a full scan on the same property.
+                {t(
+                  'Your plan is built from the same rulebook, with the same citations, as a full scan. The one thing it does not have is our model’s second opinion on your photographs. You can add that any time by running a full scan on the same property.',
+                )}
               </Text>
-              <Button title="Show me my plan" onPress={finish} loading={finishing} />
+              <Button title={t('Show me my plan')} onPress={finish} loading={finishing} />
             </Card>
           ) : current ? (
             <Card style={styles.questionCard}>
-              <Text style={styles.zone}>{zoneLabel(current.zone)}</Text>
-              <Text style={styles.prompt}>{current.prompt}</Text>
-              <Text style={styles.help}>{current.help_text}</Text>
+              <Text style={styles.zone}>{t(zoneLabel(current.zone))}</Text>
+              <Text style={styles.prompt}>{localized(current).prompt}</Text>
+              <Text style={styles.help}>{localized(current).help}</Text>
 
               <View style={styles.answers}>
                 <Pressable
@@ -122,14 +132,14 @@ export default function QuickCheckScreen() {
                   style={[styles.answerButton, styles.yes]}
                   onPress={() => answer(true)}
                 >
-                  <Text style={styles.answerTextLight}>Yes</Text>
+                  <Text style={styles.answerTextLight}>{t('Yes')}</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
                   style={[styles.answerButton, styles.no]}
                   onPress={() => answer(false)}
                 >
-                  <Text style={styles.answerTextLight}>No</Text>
+                  <Text style={styles.answerTextLight}>{t('No')}</Text>
                 </Pressable>
               </View>
 
@@ -142,14 +152,14 @@ export default function QuickCheckScreen() {
                 ]}
                 onPress={() => setIndex((prev) => prev + 1)}
               >
-                <Text style={styles.skipText}>Skip</Text>
+                <Text style={styles.skipText}>{t('Skip')}</Text>
               </Pressable>
             </Card>
           ) : null}
 
           {index > 0 && !done ? (
             <Button
-              title="Back"
+              title={t('Back')}
               variant="quiet"
               onPress={() => setIndex((prev) => Math.max(0, prev - 1))}
             />
@@ -157,7 +167,9 @@ export default function QuickCheckScreen() {
         </View>
 
         <Text style={styles.note}>
-          Skipped questions do not count either way. We never assume a hazard you did not confirm.
+          {t(
+            'Skipped questions do not count either way. We never assume a hazard you did not confirm.',
+          )}
         </Text>
       </ScrollView>
     </Screen>

@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import type { FhszClass } from '@/api/types';
+import { useT } from '@/i18n';
 import { colors, radius, spacing, type } from '@/theme';
 
 const BANDS: { key: FhszClass; label: string; color: string }[] = [
@@ -20,6 +21,7 @@ const BANDS: { key: FhszClass; label: string; color: string }[] = [
 ];
 
 export function RiskMeter({ fhsz }: { fhsz: FhszClass }) {
+  const t = useT();
   const index = BANDS.findIndex((band) => band.key === fhsz);
   const progress = useRef(new Animated.Value(0)).current;
 
@@ -65,7 +67,7 @@ export function RiskMeter({ fhsz }: { fhsz: FhszClass }) {
             style={[styles.label, i === index && { color: band.color, fontWeight: '800' }]}
             numberOfLines={1}
           >
-            {band.label}
+            {t(band.label)}
           </Text>
         ))}
       </View>

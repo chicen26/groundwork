@@ -18,6 +18,7 @@ import { AmbientBackground } from '@/components/AmbientBackground';
 import { MiniMap } from '@/components/MiniMap';
 import { RiskMeter } from '@/components/RiskMeter';
 import { Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
+import { useT } from '@/i18n';
 import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
@@ -28,6 +29,7 @@ const UNRESOLVED_LABELS: Record<string, string> = {
 };
 
 export default function PropertyScreen() {
+  const t = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
   const credentials = useCredentials();
   const router = useRouter();
@@ -80,7 +82,7 @@ export default function PropertyScreen() {
         options={{
           headerRight: () => (
             <Pressable onPress={() => router.push(`/properties/${property.id}/edit`)} hitSlop={12}>
-              <Text style={styles.editLink}>Edit</Text>
+              <Text style={styles.editLink}>{t('Edit')}</Text>
             </Pressable>
           ),
         }}
@@ -98,43 +100,51 @@ export default function PropertyScreen() {
           <RiskMeter fhsz={geo.fhsz} />
           {geo.fhsz_source_version ? (
             <Text style={styles.source}>
-              {geo.fhsz_responsibility === 'LRA' ? 'Local' : 'State'} responsibility area ·{' '}
-              {geo.fhsz_source_version}
+              {geo.fhsz_responsibility === 'LRA'
+                ? t('Local responsibility area')
+                : t('State responsibility area')}{' '}
+              · {geo.fhsz_source_version}
             </Text>
           ) : null}
 
           {geo.fhsz === 'very_high' ? (
             <Text style={styles.body}>
-              Properties in a Very High zone carry defensible-space obligations under state law, and
-              would be covered by the proposed Zone 0 rule for the first five feet.
+              {t(
+                'Properties in a Very High zone carry defensible-space obligations under state law, and would be covered by the proposed Zone 0 rule for the first five feet.',
+              )}
             </Text>
           ) : null}
 
           <View style={styles.factRow}>
-            <Text style={styles.factLabel}>Fire district</Text>
-            <Text style={styles.factValue}>{geo.fire_district ?? 'Not determined'}</Text>
+            <Text style={styles.factLabel}>{t('Fire district')}</Text>
+            <Text style={styles.factValue}>{geo.fire_district ?? t('Not determined')}</Text>
           </View>
           <View style={styles.factRow}>
-            <Text style={styles.factLabel}>Water utility</Text>
-            <Text style={styles.factValue}>{geo.water_utility ?? 'Not determined'}</Text>
+            <Text style={styles.factLabel}>{t('Water utility')}</Text>
+            <Text style={styles.factValue}>{geo.water_utility ?? t('Not determined')}</Text>
           </View>
 
           {geo.unresolved.length > 0 ? (
             <Text style={styles.caveat}>
-              We could not determine your{' '}
-              {geo.unresolved.map((key) => UNRESOLVED_LABELS[key] ?? key).join(' or ')}. Rather than
-              guess, we have left it blank. The wrong agency would send you to the wrong place.
+              {t(
+                'We could not determine your {things}. Rather than guess, we have left it blank. The wrong agency would send you to the wrong place.',
+                {
+                  things: geo.unresolved
+                    .map((key) => t(UNRESOLVED_LABELS[key] ?? key))
+                    .join(t(' or ')),
+                },
+              )}
             </Text>
           ) : null}
         </Card>
 
-        <Text style={[type.overline, styles.sectionOverline]}>Where to next</Text>
+        <Text style={[type.overline, styles.sectionOverline]}>{t('Where to next')}</Text>
 
         <ActionRow
           icon="⚡"
           tint={colors.accentMuted}
-          title="Quick check"
-          sub="Two minutes, no camera. Same rulebook, same citations."
+          title={t('Quick check')}
+          sub={t('Two minutes, no camera. Same rulebook, same citations.')}
           onPress={() => startScan('quick')}
           disabled={starting}
           emphasized
@@ -142,23 +152,23 @@ export default function PropertyScreen() {
         <ActionRow
           icon="📷"
           tint={colors.emberMuted}
-          title="Full scan with photos"
-          sub="Seven photographs so the model can flag what you might walk past."
+          title={t('Full scan with photos')}
+          sub={t('Seven photographs so the model can flag what you might walk past.')}
           onPress={() => startScan('full')}
           disabled={starting}
         />
         <ActionRow
           icon="💧"
           tint={colors.waterMuted}
-          title="What is your lawn worth?"
-          sub="Outline it on a satellite view; we measure and price the rebate."
+          title={t('What is your lawn worth?')}
+          sub={t('Outline it on a satellite view; we measure and price the rebate.')}
           onPress={() => router.push(`/properties/${property.id}/lawn`)}
         />
         <ActionRow
           icon="🌱"
           tint={colors.surfaceMuted}
-          title="Local programmes"
-          sub="Chipping, cost-share, and inspections from agencies near you."
+          title={t('Local programmes')}
+          sub={t('Chipping, cost-share, and inspections from agencies near you.')}
           onPress={() => router.push(`/properties/${property.id}/resources`)}
         />
       </ScrollView>

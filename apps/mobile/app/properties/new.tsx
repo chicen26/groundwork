@@ -24,10 +24,12 @@ import type { AddressSuggestion } from '@/api/types';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { Button, Card, ErrorNote, Screen } from '@/components/ui';
 import { ZipQuickLookCard, useZipQuickLook } from '@/components/ZipQuickLook';
+import { useT } from '@/i18n';
 import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function NewPropertyScreen() {
+  const t = useT();
   const credentials = useCredentials();
   const router = useRouter();
 
@@ -97,8 +99,8 @@ export default function NewPropertyScreen() {
           {error ? <ErrorNote message={error} /> : null}
 
           <Card style={styles.addressCard}>
-            <Text style={type.overline}>Where is it?</Text>
-            <Text style={[type.label, styles.spaced]}>Address or ZIP code</Text>
+            <Text style={type.overline}>{t('Where is it?')}</Text>
+            <Text style={[type.label, styles.spaced]}>{t('Address or ZIP code')}</Text>
             <AddressAutocomplete
               value={address}
               onChangeText={(text) => {
@@ -109,34 +111,40 @@ export default function NewPropertyScreen() {
               placeholder="123 Diablo Road, Danville, CA"
             />
             <Text style={styles.help}>
-              Start typing and pick your address, or enter just a ZIP for a quick look.
+              {t('Start typing and pick your address, or enter just a ZIP for a quick look.')}
             </Text>
 
-            <Text style={[type.label, styles.spaced]}>Name it (optional)</Text>
+            <Text style={[type.label, styles.spaced]}>{t('Name it (optional)')}</Text>
             <TextInput
               style={styles.input}
               value={label}
               onChangeText={setLabel}
-              placeholder="Home"
+              placeholder={t('Home')}
               placeholderTextColor={colors.textMuted}
               autoCapitalize="words"
             />
           </Card>
 
           {zipOnly && quickLook.result ? (
-            <ZipQuickLookCard look={quickLook.result} ctaHint="Enter your full address above" />
+            <ZipQuickLookCard
+              look={quickLook.result}
+              ctaHint={t('Enter your full address above')}
+            />
           ) : null}
           {zipOnly && quickLook.loading ? (
-            <Text style={styles.help}>Taking a quick look at {zip}…</Text>
+            <Text style={styles.help}>
+              {t('Taking a quick look at {zip}…', { zip: zip ?? '' })}
+            </Text>
           ) : null}
           {zipOnly && quickLook.error ? <Text style={styles.help}>{quickLook.error}</Text> : null}
 
           {showCoordinates ? (
             <Card>
-              <Text style={type.heading}>Place it yourself</Text>
+              <Text style={type.heading}>{t('Place it yourself')}</Text>
               <Text style={styles.help}>
-                We could not look that address up. Enter the coordinates instead; your phone&apos;s
-                map app can copy them from a dropped pin.
+                {t(
+                  'We could not look that address up. Enter the coordinates instead; your phone’s map app can copy them from a dropped pin.',
+                )}
               </Text>
               <TextInput
                 style={styles.input}
@@ -158,7 +166,7 @@ export default function NewPropertyScreen() {
           ) : null}
 
           <Button
-            title="Look up my zone"
+            title={t('Look up my zone')}
             onPress={save}
             loading={saving}
             disabled={trimmed.length < 4 || zipOnly}
@@ -166,7 +174,7 @@ export default function NewPropertyScreen() {
 
           {!showCoordinates ? (
             <Button
-              title="Enter coordinates instead"
+              title={t('Enter coordinates instead')}
               variant="quiet"
               onPress={() => setShowCoordinates(true)}
             />

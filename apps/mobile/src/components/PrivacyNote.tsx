@@ -8,15 +8,18 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useT } from '@/i18n';
 import { colors, radius, spacing, type } from '@/theme';
 
 export function PrivacyNote() {
+  const t = useT();
   return (
     <View style={styles.note}>
-      <Text style={styles.title}>🔒 Your data stays yours</Text>
+      <Text style={styles.title}>🔒 {t('Your data stays yours')}</Text>
       <Text style={styles.body}>
-        Photos are visible only to you, location data is stripped from them before upload, and
-        deleting a property or your account erases the actual files, not just the records.
+        {t(
+          'Photos are visible only to you, location data is stripped from them before upload, and deleting a property or your account erases the actual files, not just the records.',
+        )}
       </Text>
     </View>
   );

@@ -7,15 +7,18 @@
 
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { api } from '@/api/client';
 import { PrivacyNote } from '@/components/PrivacyNote';
 import { Button, Card, ErrorNote, Screen } from '@/components/ui';
+import { useLocale, useT } from '@/i18n';
 import { useCredentials, useSession } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function SettingsScreen() {
+  const t = useT();
+  const { locale, setLocale } = useLocale();
   const credentials = useCredentials();
   const { signOut, email, accountsEnabled } = useSession();
   const router = useRouter();
@@ -47,28 +50,47 @@ export default function SettingsScreen() {
         {error ? <ErrorNote message={error} /> : null}
 
         <Card>
-          <Text style={type.heading}>Account</Text>
+          <Text style={type.heading}>{t('Account')}</Text>
           <Text style={styles.body}>
             {email ??
               (accountsEnabled
-                ? 'Signed in.'
-                : 'A private account on this device. No email, nothing shared.')}
+                ? t('Signed in.')
+                : t('A private account on this device. No email, nothing shared.'))}
           </Text>
+        </Card>
+
+        <Card>
+          <Text style={type.heading}>{t('Language')}</Text>
+          <View style={styles.languageRow}>
+            <Button
+              title="English"
+              variant={locale === 'en' ? 'primary' : 'secondary'}
+              onPress={() => setLocale('en')}
+            />
+            <Button
+              title="Español"
+              variant={locale === 'es' ? 'primary' : 'secondary'}
+              onPress={() => setLocale('es')}
+            />
+          </View>
         </Card>
 
         <PrivacyNote />
 
         <Card>
-          <Text style={type.heading}>Sign out</Text>
-          <Text style={styles.body}>Your properties and scans stay saved for next time.</Text>
-          <Button title="Sign out" variant="secondary" onPress={leave} />
+          <Text style={type.heading}>{t('Sign out')}</Text>
+          <Text style={styles.body}>
+            {t('Your properties and scans stay saved for next time.')}
+          </Text>
+          <Button title={t('Sign out')} variant="secondary" onPress={leave} />
         </Card>
 
         <Card>
-          <Text style={type.heading}>Delete everything</Text>
+          <Text style={type.heading}>{t('Delete everything')}</Text>
           <Text style={styles.body}>
-            Removes your account, properties, scans, and every photo file. This cannot be undone.
-            Type DELETE to confirm.
+            {t(
+              'Removes your account, properties, scans, and every photo file. This cannot be undone. Type DELETE to confirm.',
+            )}
           </Text>
           <TextInput
             style={styles.input}
@@ -79,7 +101,7 @@ export default function SettingsScreen() {
             autoCorrect={false}
           />
           <Button
-            title="Permanently delete my account"
+            title={t('Permanently delete my account')}
             onPress={erase}
             disabled={confirm !== 'DELETE'}
             loading={busy}
@@ -92,6 +114,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg },
+  languageRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   body: { ...type.body, color: colors.textMuted, marginVertical: spacing.sm },
   input: {
     ...type.body,

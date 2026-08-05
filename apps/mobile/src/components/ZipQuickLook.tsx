@@ -16,6 +16,7 @@ import { AlertStrip } from '@/components/AlertStrip';
 import { MiniMap } from '@/components/MiniMap';
 import { RiskMeter } from '@/components/RiskMeter';
 import { ZoneBadge } from '@/components/ui';
+import { useT } from '@/i18n';
 import { colors, radius, spacing, type } from '@/theme';
 
 export function useZipQuickLook(zip: string | null) {
@@ -71,6 +72,7 @@ export function ZipQuickLookCard({
   /** What "more" looks like from where this card is shown, e.g. "Enter your full address above". */
   ctaHint: string;
 }) {
+  const t = useT();
   const place = look.place ? `${look.place}${look.state_code ? `, ${look.state_code}` : ''}` : null;
 
   // Arrive, don't appear: the card is the payoff of typing a ZIP, and easing it in reads as the
@@ -92,7 +94,7 @@ export function ZipQuickLookCard({
         },
       ]}
     >
-      <Text style={type.overline}>Quick look · ZIP {look.zip}</Text>
+      <Text style={type.overline}>{t('Quick look · ZIP {zip}', { zip: look.zip })}</Text>
       {place ? <Text style={styles.place}>{place}</Text> : null}
 
       <MiniMap lat={look.lat} lng={look.lng} />
@@ -103,24 +105,28 @@ export function ZipQuickLookCard({
 
       <RiskMeter fhsz={look.fhsz} />
 
-      <Text style={styles.meaning}>{ZONE_MEANING[look.fhsz]}</Text>
+      <Text style={styles.meaning}>{t(ZONE_MEANING[look.fhsz])}</Text>
       {look.fhsz_source_version ? (
-        <Text style={styles.source}>At this ZIP’s center point · {look.fhsz_source_version}</Text>
+        <Text style={styles.source}>
+          {t('At this ZIP’s center point · {source}', { source: look.fhsz_source_version })}
+        </Text>
       ) : null}
 
       {/* Live weather context for the area, when the cached feeds have something to say. */}
       <AlertStrip lat={look.lat} lng={look.lng} />
 
       <View style={styles.factRow}>
-        <Fact label="Fire district" value={look.fire_district} />
-        <Fact label="Water utility" value={look.water_utility} />
+        <Fact label={t('Fire district')} value={look.fire_district} />
+        <Fact label={t('Water utility')} value={look.water_utility} />
       </View>
 
       <View style={styles.banner}>
-        <Text style={styles.bannerBadge}>Approximate</Text>
+        <Text style={styles.bannerBadge}>{t('Approximate')}</Text>
         <Text style={styles.bannerText}>
-          This is a rough snapshot of the area, not your property. {ctaHint} for your exact zone,
-          local rules, and the rebates that apply to you.
+          {t(
+            'This is a rough snapshot of the area, not your property. {hint} for your exact zone, local rules, and the rebates that apply to you.',
+            { hint: ctaHint },
+          )}
         </Text>
       </View>
     </Animated.View>
@@ -128,11 +134,12 @@ export function ZipQuickLookCard({
 }
 
 function Fact({ label, value }: { label: string; value: string | null }) {
+  const t = useT();
   return (
     <View style={styles.fact}>
       <Text style={styles.factLabel}>{label}</Text>
       <Text style={value ? styles.factValue : styles.factUnknown}>
-        {value ?? 'Needs your address'}
+        {value ?? t('Needs your address')}
       </Text>
     </View>
   );

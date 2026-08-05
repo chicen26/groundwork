@@ -15,6 +15,7 @@ import type {
   AlertStrip,
   Assessment,
   Finding,
+  ImpactStats,
   LawnMeasurement,
   LocalResource,
   Property,
@@ -146,6 +147,16 @@ export const api = {
     return reach(`${API_BASE_URL}/v1/geo/quick-look?zip=${encodeURIComponent(zip)}`).then((r) =>
       unwrap<ZipQuickLook>(r),
     );
+  },
+
+  /** Aggregate impact across every account. Failure means the band simply does not render. */
+  async impactStats(): Promise<ImpactStats | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/stats/impact`);
+      return response.ok ? ((await response.json()) as ImpactStats) : null;
+    } catch {
+      return null;
+    }
   },
 
   listProperties(credentials: Credentials): Promise<Property[]> {
