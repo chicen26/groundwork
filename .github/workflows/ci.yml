@@ -80,9 +80,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install
-        # Dataset assembly needs nothing heavy on purpose: the leakage guards must run on every
-        # push, and waiting on torch would mean they eventually would not.
-        run: pip install pytest
+        # Deliberately light: the leakage and licence guards must run on every push, and waiting on
+        # torch would mean they eventually would not.
+        run: pip install pytest -e ./ml
 
       - name: Test
         run: python -m pytest ml/tests

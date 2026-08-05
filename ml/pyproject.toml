@@ -3,9 +3,12 @@ name = "groundwork-ml"
 version = "0.1.0"
 description = "Dataset assembly, training, and evaluation for the Groundwork hazard detector"
 requires-python = ">=3.12"
-# Dataset assembly and the leakage guards deliberately need nothing heavy, so they run in CI in
-# seconds. Training and evaluation import ultralytics lazily; install the `train` extra for those.
-dependencies = []
+# Deliberately light: dataset assembly, the leakage guards, and the harvester's licence rules all
+# run in CI in seconds. Training and auto-labelling import torch lazily via their own extras.
+dependencies = [
+    # Explicit CA bundle for the harvester's outbound HTTPS, rather than whatever the host trusts.
+    "certifi>=2024.8.30",
+]
 
 [project.optional-dependencies]
 train = ["ultralytics>=8.3"]
