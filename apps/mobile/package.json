@@ -7,26 +7,32 @@
     "expo": "~57.0.10",
     "expo-camera": "~57.0.3",
     "expo-constants": "~57.0.9",
+    "expo-file-system": "~57.0.1",
     "expo-image-picker": "~57.0.7",
     "expo-linking": "~57.0.5",
     "expo-router": "~57.0.10",
+    "expo-sharing": "~57.0.8",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-maps": "1.27.2",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "prettier": "^3.3.0"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"app/**/*.tsx\" \"src/**/*.ts\" \"src/**/*.tsx\"",
+    "format:check": "prettier --check \"app/**/*.tsx\" \"src/**/*.ts\" \"src/**/*.tsx\""
   },
   "private": true
 }

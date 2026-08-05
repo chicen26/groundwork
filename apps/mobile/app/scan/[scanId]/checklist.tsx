@@ -139,10 +139,7 @@ function Choice({
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[
-        styles.choice,
-        selected && { backgroundColor: tone, borderColor: tone },
-      ]}
+      style={[styles.choice, selected && { backgroundColor: tone, borderColor: tone }]}
     >
       <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text>
     </Pressable>
@@ -152,7 +149,11 @@ function Choice({
 const styles = StyleSheet.create({
   content: { padding: spacing.lg },
   padded: { padding: spacing.lg },
-  progress: { ...type.label, color: colors.textMuted, marginBottom: spacing.md },
+  progress: {
+    ...type.label,
+    color: colors.textMuted,
+    marginBottom: spacing.md,
+  },
   stationHeading: {
     ...type.label,
     color: colors.textMuted,

@@ -76,9 +76,21 @@ export function LegalStatusBadge({ status }: { status: RuleStatus | null }) {
   if (!status) return null;
 
   const config: Record<RuleStatus, { label: string; bg: string; fg: string }> = {
-    in_effect: { label: 'Required now', bg: colors.accentMuted, fg: colors.accent },
-    pending_adoption: { label: 'Proposed, not yet law', bg: colors.draftMuted, fg: colors.draft },
-    advisory: { label: 'Recommended', bg: colors.surfaceMuted, fg: colors.textMuted },
+    in_effect: {
+      label: 'Required now',
+      bg: colors.accentMuted,
+      fg: colors.accent,
+    },
+    pending_adoption: {
+      label: 'Proposed, not yet law',
+      bg: colors.draftMuted,
+      fg: colors.draft,
+    },
+    advisory: {
+      label: 'Recommended',
+      bg: colors.surfaceMuted,
+      fg: colors.textMuted,
+    },
   };
   const { label, bg, fg } = config[status];
 

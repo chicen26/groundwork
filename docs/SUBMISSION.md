@@ -51,9 +51,24 @@ CA-10 (Rep. Mark DeSaulnier). Deadline **Oct 26, 2026, 9:00 AM PT**; our own tar
 - **Inspiration.** Feb 2025 hazard maps redrawing 12 Contra Costa cities; the July 2026 Morgan Fire.
 - **2.0.** Air-quality module and on-device inference, both deliberately out of scope for v1.
 
+## Where this sits next to Google's wildfire work
+
+Asked and checked Aug 5, 2026. No overlap, and the contrast is worth drawing in the video.
+
+| Google | Groundwork |
+|---|---|
+| FireSat and wildfire boundary tracking — satellite **detection** of active fire, 20-minute refresh | **Prevention**, before ignition, at one parcel |
+| Crisis Response wildfire alerts during an incident | No evacuation features at all, by design |
+| Solar API — per-building rooftop analysis from imagery | Precedent worth citing: parcel-level, not city-level |
+| Tree Canopy / Environmental Insights Explorer — city-scale canopy ML | Ground-level, one yard, from the owner's own camera |
+
+Google is aerial, regional, and reactive. Groundwork is ground-level, parcel-scale, and preventive.
+Neither Google nor any CAC precedent (2025 *Fire Up*, 2024 *Sentinel* — both detection and
+evacuation) touches the fire-versus-water policy contradiction.
+
 ## What is honest to claim, and what is not
 
-**Can claim:** first consumer photo-based defensible-space tool we could find; a self-collected and
+**Can claim:** the only tool that reconciles Zone 0 clearance with lawn-replacement rebates; a self-collected and
 self-labeled dataset with a taxonomy written before labeling; a deterministic rules engine with
 published citations; rebate math that is exact and caveated.
 

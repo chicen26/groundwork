@@ -12,6 +12,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
 import type { Property } from '@/api/types';
+import { AlertStrip } from '@/components/AlertStrip';
 import { Button, Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
 import { useCredentials } from '@/session';
 import { colors, spacing, type } from '@/theme';
@@ -69,6 +70,7 @@ export default function PropertyScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
+        <AlertStrip lat={property.lat} lng={property.lng} />
         <Text style={type.title}>{property.label ?? property.address}</Text>
         {property.label ? <Text style={styles.muted}>{property.address}</Text> : null}
 
@@ -114,6 +116,31 @@ export default function PropertyScreen() {
           </Text>
           <Button title="Start a scan" onPress={startScan} loading={starting} />
         </Card>
+
+        <Card>
+          <Text style={type.heading}>What is your lawn worth?</Text>
+          <Text style={styles.body}>
+            Outline the lawn on a satellite view and we will measure it and work out what your water
+            utility pays to replace it.
+          </Text>
+          <Button
+            title="Measure a lawn"
+            variant="secondary"
+            onPress={() => router.push(`/properties/${property.id}/lawn`)}
+          />
+        </Card>
+
+        <Card>
+          <Text style={type.heading}>Local programmes</Text>
+          <Text style={styles.body}>
+            Chipping, cost-share, and inspections from agencies near you.
+          </Text>
+          <Button
+            title="See what is available"
+            variant="secondary"
+            onPress={() => router.push(`/properties/${property.id}/resources`)}
+          />
+        </Card>
       </ScrollView>
     </Screen>
   );
@@ -134,6 +161,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   factLabel: { ...type.caption, color: colors.textMuted },
-  factValue: { ...type.label, color: colors.text, flexShrink: 1, textAlign: 'right' },
+  factValue: {
+    ...type.label,
+    color: colors.text,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
   caveat: { ...type.caption, color: colors.textMuted, marginTop: spacing.md },
 });

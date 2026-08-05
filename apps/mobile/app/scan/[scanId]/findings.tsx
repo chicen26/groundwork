@@ -68,8 +68,8 @@ export default function FindingsScreen() {
         {error ? <ErrorNote message={error} onRetry={load} /> : null}
 
         <Text style={styles.intro}>
-          These are things our model flagged for review. It is advisory and it does get things
-          wrong — you know your property, so confirm what is real and wave off what is not.
+          These are things our model flagged for review. It is advisory and it does get things wrong
+          — you know your property, so confirm what is real and wave off what is not.
         </Text>
 
         {model.length === 0 ? (
@@ -112,9 +112,7 @@ export default function FindingsScreen() {
               </View>
             ) : null}
 
-            <Text style={type.heading}>
-              {HAZARD_LABELS[finding.hazard] ?? finding.hazard}
-            </Text>
+            <Text style={type.heading}>{HAZARD_LABELS[finding.hazard] ?? finding.hazard}</Text>
 
             <Text style={styles.confidence}>
               {finding.needs_confirmation ? 'Possible — please confirm' : 'Flagged for review'}
@@ -182,7 +180,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 2,
   },
-  confidence: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
+  confidence: {
+    ...type.caption,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
   uncertain: { ...type.caption, color: colors.moderate, marginTop: spacing.sm },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   action: { flex: 1 },

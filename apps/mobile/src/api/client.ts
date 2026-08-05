@@ -9,7 +9,17 @@
 
 import Constants from 'expo-constants';
 
-import type { Assessment, Finding, Property, Question, ScanSummary, Station } from './types';
+import type {
+  AlertStrip,
+  Assessment,
+  Finding,
+  LawnMeasurement,
+  LocalResource,
+  Property,
+  Question,
+  ScanSummary,
+  Station,
+} from './types';
 
 /**
  * Where the backend lives. Configured in app.json so a dev build, a tunnel, and demo day can each
@@ -68,7 +78,9 @@ async function request<T>(
   const response = await fetch(`${API_BASE_URL}/v1${path}`, {
     ...init,
     headers: headersFor(credentials, {
-      ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+      ...(init.body && !(init.body instanceof FormData)
+        ? { 'Content-Type': 'application/json' }
+        : {}),
       ...((init.headers as Record<string, string>) ?? {}),
     }),
   });
@@ -173,7 +185,9 @@ export const api = {
   },
 
   assess(credentials: Credentials, scanId: string): Promise<Assessment> {
-    return request<Assessment>(`/scans/${scanId}/assess`, credentials, { method: 'POST' });
+    return request<Assessment>(`/scans/${scanId}/assess`, credentials, {
+      method: 'POST',
+    });
   },
 
   getAssessment(credentials: Credentials, assessmentId: string): Promise<Assessment> {
@@ -181,6 +195,40 @@ export const api = {
   },
 
   completePlanItem(credentials: Credentials, itemId: string): Promise<void> {
-    return request<void>(`/plan-items/${itemId}/complete`, credentials, { method: 'POST' });
+    return request<void>(`/plan-items/${itemId}/complete`, credentials, {
+      method: 'POST',
+    });
+  },
+
+  /** Send the drawn outline; the server measures it. The area decides money, so it is not ours. */
+  measureLawn(
+    credentials: Credentials,
+    propertyId: string,
+    geojson: object,
+    options: { label?: string; tier_key?: string } = {},
+  ): Promise<LawnMeasurement> {
+    return request<LawnMeasurement>(`/properties/${propertyId}/lawn`, credentials, {
+      method: 'POST',
+      body: JSON.stringify({ geojson, ...options }),
+    });
+  },
+
+  listLawns(credentials: Credentials, propertyId: string): Promise<LawnMeasurement[]> {
+    return request<LawnMeasurement[]>(`/properties/${propertyId}/lawn`, credentials);
+  },
+
+  resourcesForProperty(credentials: Credentials, propertyId: string): Promise<LocalResource[]> {
+    return request<LocalResource[]>(`/resources/for-property/${propertyId}`, credentials);
+  },
+
+  /** Cached only. A failure here must never block a screen. */
+  alerts(lat: number, lng: number): Promise<AlertStrip> {
+    return fetch(`${API_BASE_URL}/v1/feeds/alerts?lat=${lat}&lng=${lng}`).then((r) =>
+      unwrap<AlertStrip>(r),
+    );
+  },
+
+  reportUrl(assessmentId: string): string {
+    return `${API_BASE_URL}/v1/assessments/${assessmentId}/report`;
   },
 };

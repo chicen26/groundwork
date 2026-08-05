@@ -8,7 +8,14 @@
 
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+} from 'react-native';
 
 import { ApiError, api } from '@/api/client';
 import { Button, Card, ErrorNote, Screen } from '@/components/ui';
@@ -149,5 +156,9 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   spaced: { marginTop: spacing.md },
-  help: { ...type.caption, color: colors.textMuted, marginVertical: spacing.sm },
+  help: {
+    ...type.caption,
+    color: colors.textMuted,
+    marginVertical: spacing.sm,
+  },
 });

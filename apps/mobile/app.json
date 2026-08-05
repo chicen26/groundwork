@@ -35,7 +35,8 @@
         {
           "cameraPermission": "Groundwork uses the camera so you can photograph your own property for a defensible-space assessment. Photos are private to your account and their location metadata is stripped before upload."
         }
-      ]
+      ],
+      "expo-sharing"
     ]
   }
 }

@@ -83,7 +83,8 @@ export default function ScanScreen() {
         {scan.photos_pending_inference > 0 ? (
           <Text style={styles.pending}>
             {scan.photos_pending_inference} photo
-            {scan.photos_pending_inference === 1 ? '' : 's'} still being looked at. You can carry on.
+            {scan.photos_pending_inference === 1 ? '' : 's'} still being looked at. You can carry
+            on.
           </Text>
         ) : null}
 
@@ -147,7 +148,11 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   content: { padding: spacing.lg },
   padded: { padding: spacing.lg },
-  progress: { ...type.label, color: colors.textMuted, marginBottom: spacing.md },
+  progress: {
+    ...type.label,
+    color: colors.textMuted,
+    marginBottom: spacing.md,
+  },
   pending: { ...type.caption, color: colors.water, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   rowText: { flex: 1 },

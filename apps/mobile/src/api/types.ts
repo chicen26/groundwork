@@ -162,3 +162,63 @@ export const HAZARD_LABELS: Record<string, string> = {
   attached_wood_fence: 'Wooden fence attached to the house',
   combustibles_under_deck: 'Combustibles under the deck',
 };
+
+// ---------------------------------------------------------------- water
+
+export interface RebateEstimate {
+  program_key: string;
+  agency: string;
+  program_name: string;
+  tier_label: string | null;
+  rate_per_sqft: string;
+  /** What the rate alone would pay, before the cap. Shown when the cap bites. */
+  uncapped_usd: string;
+  amount_usd: string;
+  capped: boolean;
+  cap_usd: string;
+  eligible: boolean;
+  /** Present when eligible is false. Always shown — never a bare zero. */
+  ineligible_reason: string | null;
+  url: string;
+  warning: string;
+}
+
+export interface LawnMeasurement {
+  id: string;
+  label: string | null;
+  area_sqft: string;
+  annual_gallons_saved: string;
+  savings_basis: string;
+  rebates: RebateEstimate[];
+  warning: string;
+  utility: string | null;
+  /** True when the utility could not be determined and every programme is shown. */
+  showing_all_programs: boolean;
+}
+
+// ---------------------------------------------------------------- resources
+
+export interface LocalResource {
+  key: string;
+  agency: string;
+  name: string;
+  type: string;
+  summary: string;
+  url: string;
+  phone: string | null;
+  disclaimer: string | null;
+  external_only: boolean;
+  universal: boolean;
+}
+
+// ---------------------------------------------------------------- context strip
+
+export interface AlertStrip {
+  /** False means we do not know — never render it as "no warnings". */
+  available: boolean;
+  red_flag: boolean;
+  events: string[];
+  headline: string | null;
+  fetched_at: string | null;
+  note: string;
+}

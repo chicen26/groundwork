@@ -10,7 +10,9 @@
  *    runs, so the promise cannot disagree with the result.
  */
 
+import { File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -40,6 +42,7 @@ export default function ResultScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showWorking, setShowWorking] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const load = useCallback(() => {
     setError(null);
@@ -64,6 +67,35 @@ export default function ResultScreen() {
       setError(e instanceof Error ? e.message : 'Could not mark that done.');
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function downloadReport() {
+    if (!assessment) return;
+    setDownloading(true);
+    setError(null);
+    try {
+      // Written to a file and handed to the share sheet: the PDF exists to leave the phone, and
+      // it carries someone's address and photographs, so the user chooses where it goes rather
+      // than us picking for them.
+      const task = File.createDownloadTask(
+        api.reportUrl(assessment.id),
+        new File(Paths.cache, `groundwork-${assessment.id}.pdf`),
+        {
+          headers: { 'X-Groundwork-User': credentials.userId },
+        },
+      );
+      const file = await task.downloadAsync();
+      if (!file) {
+        throw new Error('The document did not finish downloading.');
+      }
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf' });
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not build the document.');
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -107,7 +139,12 @@ export default function ResultScreen() {
             <Text style={styles.rulebook}>Rulebook {assessment.rulebook_version}</Text>
             {assessment.breakdown.rules.map((rule) => (
               <View key={rule.rule_id} style={styles.workingRow}>
-                <Text style={[styles.workingMark, { color: rule.met ? colors.accent : colors.critical }]}>
+                <Text
+                  style={[
+                    styles.workingMark,
+                    { color: rule.met ? colors.accent : colors.critical },
+                  ]}
+                >
                   {rule.met ? '✓' : '✗'}
                 </Text>
                 <View style={styles.workingText}>
@@ -196,6 +233,21 @@ export default function ResultScreen() {
           </>
         ) : null}
 
+        <Card>
+          <Text style={type.heading}>Documentation for your insurer</Text>
+          <Text style={styles.itemDetail}>
+            A PDF of this assessment: your zone, your score, the work you have completed with its
+            photographs, and what is still outstanding. It is your own documentation, not an
+            inspection or a certification.
+          </Text>
+          <Button
+            title="Create the document"
+            variant="secondary"
+            onPress={downloadReport}
+            loading={downloading}
+          />
+        </Card>
+
         <Button title="Back to my property" variant="quiet" onPress={() => router.replace('/')} />
 
         <Disclaimer text={assessment.disclaimer} />
@@ -218,7 +270,11 @@ const styles = StyleSheet.create({
   },
   link: { ...type.label, color: colors.accent, marginTop: spacing.sm },
   formula: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
-  rulebook: { ...type.caption, color: colors.textMuted, marginBottom: spacing.sm },
+  rulebook: {
+    ...type.caption,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
+  },
   workingRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -231,7 +287,12 @@ const styles = StyleSheet.create({
   workingText: { flex: 1 },
   weight: { ...type.caption, color: colors.textMuted },
   leadIn: { ...type.label, color: colors.textMuted, marginBottom: spacing.sm },
-  itemHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   severityDot: { width: 10, height: 10, borderRadius: radius.pill },
   itemTitle: { ...type.heading, flex: 1 },
   itemDetail: { ...type.body, color: colors.textMuted, marginTop: spacing.sm },
@@ -244,7 +305,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   citation: { ...type.caption, color: colors.textMuted, marginTop: spacing.sm },
-  metaRow: { flexDirection: 'row', gap: spacing.md, marginVertical: spacing.sm },
+  metaRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginVertical: spacing.sm,
+  },
   meta: { ...type.caption, color: colors.textMuted },
   doneCard: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
   doneTitle: { ...type.body, color: colors.accent },

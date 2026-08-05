@@ -22,6 +22,8 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ title: 'Groundwork' }} />
           <Stack.Screen name="properties/new" options={{ title: 'Add a property' }} />
           <Stack.Screen name="properties/[id]" options={{ title: 'Property' }} />
+          <Stack.Screen name="properties/[id]/lawn" options={{ title: 'Measure a lawn' }} />
+          <Stack.Screen name="properties/[id]/resources" options={{ title: 'Local programmes' }} />
           <Stack.Screen name="scan/[scanId]/index" options={{ title: 'Yard scan' }} />
           <Stack.Screen
             name="scan/[scanId]/camera"

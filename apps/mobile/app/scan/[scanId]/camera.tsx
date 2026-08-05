@@ -24,7 +24,10 @@ import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function CameraScreen() {
-  const { scanId, station } = useLocalSearchParams<{ scanId: string; station: Station }>();
+  const { scanId, station } = useLocalSearchParams<{
+    scanId: string;
+    station: Station;
+  }>();
   const credentials = useCredentials();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -133,7 +136,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)',
   },
   stationName: { ...type.heading, color: '#FFF' },
-  stationHint: { ...type.caption, color: 'rgba(255,255,255,0.85)', marginTop: spacing.xs },
+  stationHint: {
+    ...type.caption,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: spacing.xs,
+  },
   controls: {
     marginTop: 'auto',
     paddingHorizontal: spacing.lg,
@@ -169,6 +176,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
   },
-  permission: { padding: spacing.lg, justifyContent: 'center', gap: spacing.md },
+  permission: {
+    padding: spacing.lg,
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
   permissionBody: { ...type.body, color: colors.textMuted },
 });
