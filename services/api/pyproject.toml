@@ -17,6 +17,9 @@ dependencies = [
     "pillow>=11.0",
     # FastAPI needs this to parse multipart photo uploads.
     "python-multipart>=0.0.9",
+    # PDF generation. ReportLab rather than an HTML engine: no system libraries, so the container
+    # that builds in CI is the one that renders the report on demo day.
+    "reportlab>=4.2",
 ]
 
 [project.optional-dependencies]

@@ -14,7 +14,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import pool
-from app.routers import health, plants, properties, resources, rules, scans, water
+from app.routers import (
+    health,
+    plants,
+    properties,
+    reports,
+    resources,
+    rules,
+    scans,
+    water,
+)
 from app.rules.rulebook import load_rulebook
 from app.storage import init_storage
 
@@ -82,6 +91,7 @@ def create_app() -> FastAPI:
     app.include_router(water.router, prefix=API_PREFIX)
     app.include_router(plants.router, prefix=API_PREFIX)
     app.include_router(resources.router, prefix=API_PREFIX)
+    app.include_router(reports.router, prefix=API_PREFIX)
 
     return app
 
