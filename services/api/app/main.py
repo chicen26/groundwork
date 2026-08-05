@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import pool
+from app.db.migrate import migrate
 from app.routers import (
     account,
     health,
@@ -31,6 +32,32 @@ from app.storage import init_storage
 API_PREFIX = "/v1"
 
 logger = logging.getLogger(__name__)
+
+
+async def _warn_about_pending_migrations(settings) -> None:
+    """Say something loud when the schema is behind the code.
+
+    A missing column surfaces as a 500 on whichever endpoint touches it first, which reads like a
+    broken feature rather than an unapplied migration. Tests never hit this because they rebuild
+    their database from scratch, so a long-lived development database is exactly where it bites.
+    Fatal in production, where serving against a half-migrated schema is worse than not starting.
+    """
+    try:
+        pending = await migrate(settings.database_url, status_only=True)
+    except Exception:
+        logger.warning("could not check for pending migrations")
+        return
+
+    if not pending:
+        return
+    message = (
+        f"{len(pending)} pending migration(s): {', '.join(pending)}. Run: python -m app.db.migrate"
+    )
+    if settings.is_production:
+        raise RuntimeError(message)
+    logger.warning("=" * 78)
+    logger.warning(message)
+    logger.warning("=" * 78)
 
 
 @asynccontextmanager
@@ -53,6 +80,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             min_size=settings.db_pool_min_size,
             max_size=settings.db_pool_max_size,
         )
+        await _warn_about_pending_migrations(settings)
     elif settings.is_production:
         raise RuntimeError("GROUNDWORK_DATABASE_URL is required in production")
     else:
