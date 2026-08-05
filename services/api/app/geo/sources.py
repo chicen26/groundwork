@@ -14,9 +14,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-# Contra Costa and Alameda counties plus a margin — the CA-10 corridor the app serves. Statewide
-# layers are clipped to this on import so we host tens of megabytes rather than gigabytes.
+# Import extents. The corridor keeps dev imports fast; the default deployment imports the whole
+# state — CAL FIRE's maps are statewide, so serving all of California is a bounding box, not a
+# feature. (~28k polygons statewide vs ~800 in the corridor, verified Aug 2026.)
 CA10_BBOX = (-122.55, 37.40, -121.40, 38.15)
+CALIFORNIA_BBOX = (-124.48, 32.53, -114.13, 42.01)
+EXTENTS = {"ca10": CA10_BBOX, "california": CALIFORNIA_BBOX}
 
 
 def _fhsz_class_from_description(description: str | None) -> str:

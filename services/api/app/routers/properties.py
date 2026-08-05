@@ -7,6 +7,7 @@ came from, and any answer we cannot determine is returned as unresolved rather t
 
 from __future__ import annotations
 
+import contextlib
 from typing import Annotated
 from uuid import UUID
 
@@ -31,6 +32,25 @@ class PropertyCreate(BaseModel):
 
     @model_validator(mode="after")
     def coordinates_come_as_a_pair(self) -> PropertyCreate:
+        if (self.lat is None) != (self.lng is None):
+            raise ValueError("lat and lng must be provided together")
+        return self
+
+
+class PropertyUpdate(BaseModel):
+    """What can change after setup.
+
+    A new address or pin re-runs the whole geo resolution — zone, district, utility, state — because
+    a moved property is a different property as far as the law is concerned.
+    """
+
+    label: str | None = Field(default=None, max_length=80)
+    address: str | None = Field(default=None, min_length=4, max_length=300)
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
+
+    @model_validator(mode="after")
+    def coordinates_come_as_a_pair(self) -> PropertyUpdate:
         if (self.lat is None) != (self.lng is None):
             raise ValueError("lat and lng must be provided together")
         return self
@@ -200,3 +220,106 @@ def _row_to_response(row) -> PropertyResponse:
         lng=row["lng"],
         geo=GeoSummary.from_resolution(resolution, row["state_code"]),
     )
+
+
+@router.patch("/{property_id}", response_model=PropertyResponse)
+async def update_property(
+    user_id: CurrentUser, property_id: Annotated[UUID, Path()], payload: PropertyUpdate
+) -> PropertyResponse:
+    """Edit a property after setup. Moving it re-resolves everything the location decides."""
+    async with pool.acquire_as_user(user_id) as conn:
+        existing = await conn.fetchrow(
+            "SELECT id, address FROM properties WHERE id = $1", property_id
+        )
+        if existing is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="property not found")
+
+        if payload.label is not None:
+            await conn.execute(
+                "UPDATE properties SET label = $2 WHERE id = $1", property_id, payload.label
+            )
+
+        moved = payload.address is not None or payload.lat is not None
+        if moved:
+            lat, lng, address = payload.lat, payload.lng, payload.address or existing["address"]
+            state_code: str | None = None
+            if lat is None or lng is None:
+                try:
+                    located = await geocode(conn, address)
+                except GeocodingUnavailable as exc:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail=f"could not locate that address ({exc}); enter coordinates instead",
+                    ) from exc
+                lat, lng, address = located.lat, located.lng, located.matched_address
+                state_code = located.state_code
+
+            resolution = await resolve_point(conn, lat=lat, lng=lng)
+            state_code = state_code or resolution.implied_state
+            await conn.execute(
+                """
+                UPDATE properties SET
+                    address = $2,
+                    location = ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography,
+                    fhsz = $5::fhsz_class, fhsz_responsibility = $6, fhsz_source_version = $7,
+                    fire_district = $8, water_utility = $9, state_code = $10,
+                    geo_resolved_at = now()
+                WHERE id = $1
+                """,
+                property_id,
+                address,
+                lng,
+                lat,
+                resolution.fhsz,
+                resolution.fhsz_responsibility,
+                resolution.fhsz_source_version,
+                resolution.fire_district,
+                resolution.water_utility,
+                state_code,
+            )
+
+        row = await conn.fetchrow(
+            """
+            SELECT id, address, label,
+                   ST_Y(location::geometry) AS lat, ST_X(location::geometry) AS lng,
+                   fhsz::text AS fhsz, fhsz_responsibility, fhsz_source_version,
+                   fire_district, water_utility, state_code
+            FROM properties WHERE id = $1
+            """,
+            property_id,
+        )
+    return _row_to_response(row)
+
+
+@router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_property(user_id: CurrentUser, property_id: Annotated[UUID, Path()]) -> None:
+    """Remove one property and everything under it, photo files included.
+
+    Same promise as account deletion, scoped to one address: the cascade removes the rows, and the
+    bytes go with them.
+    """
+    from app.storage import get_storage
+
+    async with pool.acquire_as_user(user_id) as conn:
+        paths = [
+            r["storage_path"]
+            for r in await conn.fetch(
+                """
+                SELECT ph.storage_path FROM photos ph
+                JOIN scans s ON s.id = ph.scan_id
+                WHERE s.property_id = $1
+                """,
+                property_id,
+            )
+        ]
+        deleted = await conn.fetchval(
+            "DELETE FROM properties WHERE id = $1 RETURNING id", property_id
+        )
+        if deleted is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="property not found")
+
+    storage = get_storage()
+    for path in paths:
+        # Keep going: one stuck file must not strand the rest of the cleanup.
+        with contextlib.suppress(OSError):
+            storage.delete(path)

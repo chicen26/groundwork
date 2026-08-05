@@ -28,7 +28,7 @@ import asyncpg
 import certifi
 
 from app.config import get_settings
-from app.geo.sources import CA10_BBOX, SOURCES, LayerSource
+from app.geo.sources import EXTENTS, SOURCES, LayerSource
 
 PAGE_SIZE = 500
 REQUEST_TIMEOUT_S = 120
@@ -166,14 +166,16 @@ async def load(conn: asyncpg.Connection, source: LayerSource, features: list[dic
     return loaded
 
 
-async def import_layers(dsn: str, keys: list[str], *, dry_run: bool = False) -> dict[str, int]:
+async def import_layers(
+    dsn: str, keys: list[str], *, bbox=None, dry_run: bool = False
+) -> dict[str, int]:
     results: dict[str, int] = {}
     conn = await asyncpg.connect(dsn)
     try:
         for key in keys:
             source = SOURCES[key]
             print(f"{source.key}: fetching from {source.url}", file=sys.stderr)
-            features = fetch_features(source, CA10_BBOX)
+            features = fetch_features(source, bbox or EXTENTS["california"])
             if dry_run:
                 print(f"  {source.key}: dry run, {len(features)} features not loaded")
                 results[key] = 0
@@ -190,6 +192,12 @@ def main() -> int:
     parser.add_argument("--layer", action="append", choices=sorted(SOURCES), default=[])
     parser.add_argument("--all", action="store_true", help="import every configured layer")
     parser.add_argument("--dry-run", action="store_true", help="fetch but do not write")
+    parser.add_argument(
+        "--extent",
+        choices=sorted(EXTENTS),
+        default="california",
+        help="california (default) imports the whole state; ca10 is the fast dev corridor",
+    )
     parser.add_argument("--dsn", help="override GROUNDWORK_DATABASE_URL")
     args = parser.parse_args()
 
@@ -203,7 +211,7 @@ def main() -> int:
         return 2
 
     try:
-        asyncio.run(import_layers(dsn, keys, dry_run=args.dry_run))
+        asyncio.run(import_layers(dsn, keys, bbox=EXTENTS[args.extent], dry_run=args.dry_run))
     except ImportError_ as exc:
         print(f"import failed: {exc}", file=sys.stderr)
         return 1

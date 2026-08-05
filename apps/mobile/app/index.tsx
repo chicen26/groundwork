@@ -6,12 +6,13 @@
  * would cost more testers than it protects.
  */
 
-import { Link, useFocusEffect, useRouter } from 'expo-router';
+import { Link, Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
 import type { Property } from '@/api/types';
+import { PrivacyNote } from '@/components/PrivacyNote';
 import { Button, Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
 import { newUserId, useSession } from '@/session';
 import { colors, spacing, type } from '@/theme';
@@ -45,6 +46,7 @@ export default function HomeScreen() {
           rebates that pay for it.
         </Text>
         <Button title="Get started" onPress={() => signIn(newUserId())} />
+        <PrivacyNote />
         <Text style={styles.fineprint}>
           Groundwork gives educational guidance based on published state and local requirements. It
           is not an official inspection and does not provide evacuation advice.
@@ -65,6 +67,15 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/settings')} hitSlop={12}>
+              <Text style={styles.gear}>⚙︎</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <FlatList
         contentContainerStyle={styles.list}
         data={properties}
@@ -111,4 +122,5 @@ const styles = StyleSheet.create({
   list: { padding: spacing.lg },
   body: { ...type.body, color: colors.textMuted, marginTop: spacing.xs },
   badgeRow: { marginTop: spacing.sm, flexDirection: 'row' },
+  gear: { fontSize: 22, color: colors.text },
 });

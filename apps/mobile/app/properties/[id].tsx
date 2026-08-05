@@ -6,9 +6,9 @@
  * this" is the truth.
  */
 
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
 import type { Property } from '@/api/types';
@@ -71,6 +71,15 @@ export default function PropertyScreen() {
 
   return (
     <Screen>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => router.push(`/properties/${property.id}/edit`)} hitSlop={12}>
+              <Text style={styles.editLink}>Edit</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <ScrollView contentContainerStyle={styles.content}>
         <AlertStrip lat={property.lat} lng={property.lng} />
         <Text style={type.title}>{property.label ?? property.address}</Text>
@@ -184,4 +193,5 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   caveat: { ...type.caption, color: colors.textMuted, marginTop: spacing.md },
+  editLink: { ...type.label, color: colors.accent },
 });

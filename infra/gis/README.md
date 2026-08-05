@@ -15,9 +15,10 @@ Each import writes a new `gis_layer_versions` row and promotes it to active only
 feature has loaded. A refresh that dies halfway leaves the previous map serving, and resolution
 never sees half-loaded geometry.
 
-Statewide layers are clipped on request to the CA-10 corridor (`CA10_BBOX` in `app/geo/sources.py`)
-— roughly Contra Costa and Alameda counties with a margin. That is the difference between hosting
-tens of megabytes and gigabytes we would never query.
+The default import covers **all of California** (~28k polygons; CAL FIRE's maps are statewide, so
+serving the whole state is a bounding box, not a feature). `--extent ca10` keeps dev imports fast.
+Verified statewide Aug 5, 2026: Pacific Palisades and Paradise resolve Very High, Fresno centre
+Non-Wildland.
 
 ## Layers currently configured
 

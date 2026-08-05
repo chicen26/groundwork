@@ -231,4 +231,26 @@ export const api = {
   reportUrl(assessmentId: string): string {
     return `${API_BASE_URL}/v1/assessments/${assessmentId}/report`;
   },
+
+  updateProperty(
+    credentials: Credentials,
+    propertyId: string,
+    body: { label?: string; address?: string; lat?: number; lng?: number },
+  ): Promise<Property> {
+    return request<Property>(`/properties/${propertyId}`, credentials, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  },
+
+  deleteProperty(credentials: Credentials, propertyId: string): Promise<void> {
+    return request<void>(`/properties/${propertyId}`, credentials, { method: 'DELETE' });
+  },
+
+  deleteAccount(credentials: Credentials): Promise<void> {
+    return request<void>('/account', credentials, {
+      method: 'DELETE',
+      body: JSON.stringify({ confirm: 'DELETE' }),
+    });
+  },
 };
