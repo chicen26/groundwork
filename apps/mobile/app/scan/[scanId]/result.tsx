@@ -14,7 +14,7 @@ import { File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
 import type { Assessment, PlanItem } from '@/api/types';
@@ -75,6 +75,20 @@ export default function ResultScreen() {
     setDownloading(true);
     setError(null);
     try {
+      if (Platform.OS === 'web') {
+        // No share sheet on the web; fetch with the auth header and hand the browser a blob link.
+        const response = await fetch(api.reportUrl(assessment.id), {
+          headers: { 'X-Groundwork-User': credentials.userId },
+        });
+        if (!response.ok) throw new Error('Could not build the document.');
+        const url = URL.createObjectURL(await response.blob());
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `groundwork-${assessment.id}.pdf`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
       // Written to a file and handed to the share sheet: the PDF exists to leave the phone, and
       // it carries someone's address and photographs, so the user chooses where it goes rather
       // than us picking for them.

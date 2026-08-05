@@ -111,10 +111,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Bundle
+      - name: Bundle (iOS and web)
         # A typecheck does not catch a bad import path or a missing native module. Bundling does,
-        # and it is the difference between "compiles" and "would actually open on a phone".
-        run: npx expo export --platform ios --output-dir /tmp/expo-export
+        # and building both platforms keeps the web fallbacks honest.
+        run: |
+          npx expo export --platform ios --output-dir /tmp/expo-ios
+          npx expo export --platform web --output-dir /tmp/expo-web
 
   docker:
     name: API — image builds and boots

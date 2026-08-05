@@ -28,7 +28,8 @@ async def alerts(
     return strip.as_dict()
 
 
-@router.post("/assessments/{assessment_id}/report")
+# GET: generation is idempotent and download clients (browsers, File.downloadAsync) speak GET.
+@router.get("/assessments/{assessment_id}/report")
 async def create_report(user_id: CurrentUser, assessment_id: Annotated[UUID, Path()]) -> Response:
     """Render this assessment as a PDF the homeowner can hand to an insurer."""
     async with pool.acquire_as_user(user_id) as conn:
