@@ -12,24 +12,24 @@
  */
 
 import { useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import MapView, { MapPressEvent, Marker, Polygon } from 'react-native-maps';
 
 import { api } from '@/api/client';
+import type { LatLng, LawnMapHandle } from '@/components/LawnMap';
+import { LawnMap } from '@/components/LawnMap';
 import type { LawnMeasurement, Property, RebateEstimate } from '@/api/types';
 import { Button, Card, ErrorNote, Loading, Screen } from '@/components/ui';
 import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
-
-type Point = { latitude: number; longitude: number };
 
 export default function LawnScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const credentials = useCredentials();
 
   const [property, setProperty] = useState<Property | null>(null);
-  const [points, setPoints] = useState<Point[]>([]);
+  const [points, setPoints] = useState<LatLng[]>([]);
+  const mapControls = useRef<LawnMapHandle | null>(null);
   const [result, setResult] = useState<LawnMeasurement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -43,11 +43,6 @@ export default function LawnScreen() {
   }, [credentials, id]);
 
   useEffect(load, [load]);
-
-  function addPoint(event: MapPressEvent) {
-    setPoints((current) => [...current, event.nativeEvent.coordinate]);
-    setResult(null);
-  }
 
   async function measure() {
     if (!id || points.length < 3) return;
@@ -91,29 +86,15 @@ export default function LawnScreen() {
         </Text>
 
         <View style={styles.mapWrap}>
-          <MapView
-            style={styles.map}
-            mapType="satellite"
-            initialRegion={{
-              latitude: property.lat,
-              longitude: property.lng,
-              latitudeDelta: 0.0016,
-              longitudeDelta: 0.0016,
+          <LawnMap
+            lat={property.lat}
+            lng={property.lng}
+            controlsRef={mapControls}
+            onChange={(next) => {
+              setPoints(next);
+              setResult(null);
             }}
-            onPress={addPoint}
-          >
-            {points.map((point, index) => (
-              <Marker key={index} coordinate={point} pinColor={colors.water} />
-            ))}
-            {points.length >= 3 ? (
-              <Polygon
-                coordinates={points}
-                strokeColor={colors.water}
-                strokeWidth={2}
-                fillColor="rgba(31,95,115,0.35)"
-              />
-            ) : null}
-          </MapView>
+          />
         </View>
 
         <View style={styles.mapActions}>
@@ -121,10 +102,7 @@ export default function LawnScreen() {
             <Button
               title="Undo"
               variant="secondary"
-              onPress={() => {
-                setPoints((current) => current.slice(0, -1));
-                setResult(null);
-              }}
+              onPress={() => mapControls.current?.undo()}
               disabled={points.length === 0}
             />
           </View>
@@ -132,10 +110,7 @@ export default function LawnScreen() {
             <Button
               title="Start over"
               variant="secondary"
-              onPress={() => {
-                setPoints([]);
-                setResult(null);
-              }}
+              onPress={() => mapControls.current?.clear()}
               disabled={points.length === 0}
             />
           </View>

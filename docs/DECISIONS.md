@@ -134,3 +134,19 @@ A property's state comes from the geocoder, or is inferred from the maps that ma
 inside a CAL FIRE layer is in California, because that layer covers nothing else. An undetermined
 state means fewer citations, never a blank screen.
 
+---
+
+### D11 — Leaflet in a WebView instead of react-native-maps · Aug 5, 2026
+
+**Decision.** The lawn-outlining map is a self-contained Leaflet page in a WebView, over Esri World
+Imagery tiles, rather than the native `react-native-maps` component.
+
+**Why.** On Android, `react-native-maps` requires a Google Maps API key — an account, a billing
+profile, and a secret to manage. That is real friction for a free student project, it breaks for
+anyone who clones the repository, and it is a key we would have to keep out of a public repo.
+Leaflet over Esri needs no key and renders identically on iOS, Android, and the web, so there is one
+implementation instead of three and one fewer platform-specific fallback screen to keep honest.
+
+The page is inlined rather than fetched, so there is no third-party script in the trust path and
+drawing works with nothing but the tiles.
+

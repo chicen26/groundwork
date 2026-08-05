@@ -22,6 +22,8 @@ dependencies are added.
 | certifi | CA bundle for outbound HTTPS | MPL-2.0 |
 | Pillow | Image decoding and EXIF stripping | MIT-CMU |
 | Ultralytics YOLO11 | Architecture we fine-tune; training and inference runtime | AGPL-3.0 |
+| Leaflet | Satellite map for lawn outlining, inside a WebView | BSD-2-Clause |
+| react-native-webview | Hosts the map page | MIT |
 
 _Additional entries are appended as each step lands (Supabase client, turf.js, WeasyPrint/ReportLab)._
 
@@ -49,6 +51,7 @@ evaluation artefact are ours.
 | NWS `api.weather.gov` | Red Flag Warning banner | Free, no key; cached server-side |
 | CAL FIRE incidents JSON | Nearby active incidents | Undocumented endpoint; cached, treated as unstable |
 | NASA FIRMS | Optional hotspot context | Free key; cached |
+| Esri World Imagery tiles | Satellite basemap for lawn outlining | Free, no key; attributed on the map as required |
 | Genasys Protect | Evacuation-zone lookup deep link only | No API used; outbound link only |
 | Supabase | Auth, Postgres, photo storage | Hosted service |
 
