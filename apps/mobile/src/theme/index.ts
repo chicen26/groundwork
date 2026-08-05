@@ -22,14 +22,17 @@ export const fonts = {
 } as const;
 
 export const colors = {
-  background: '#F6F3EC',
+  // Cool sage-white, not beige: the light of a nursery greenhouse rather than old paper. Surfaces
+  // are pure white so cards read crisp against it, the way current product sites carry color in
+  // accents over a quiet, slightly-green field.
+  background: '#F2F6EF',
   surface: '#FFFFFF',
-  surfaceMuted: '#EDE9DF',
-  border: '#E2DDD0',
+  surfaceMuted: '#E7EEE2',
+  border: '#DBE4D5',
 
-  text: '#1A2119',
-  textMuted: '#68705F',
-  textInverse: '#F8F6F0',
+  text: '#18201A',
+  textMuted: '#5D685C',
+  textInverse: '#F7FAF4',
 
   // The brand family: deep evergreen ink, a brighter leaf for accents on dark, warm ember, water.
   ink: '#22311F',
@@ -55,11 +58,11 @@ export const colors = {
   low: '#4A6B3A',
 
   // Water and rebate affordances, deliberately a different family from the fire palette.
-  water: '#1F6273',
-  waterMuted: '#E0EEF1',
+  water: '#146678',
+  waterMuted: '#DDEEF2',
 
-  accent: '#2F5233',
-  accentMuted: '#E4EDE0',
+  accent: '#2C5A33',
+  accentMuted: '#DEEDDA',
 
   // Draft regulations get their own treatment so "not law yet" is visible, not buried in a caption.
   draft: '#5B5391',
@@ -105,18 +108,18 @@ export const type = {
 export const shadow = {
   card: Platform.select<ViewStyle>({
     default: {
-      shadowColor: '#3A3325',
+      shadowColor: '#22301F',
       shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.08,
+      shadowOpacity: 0.07,
       shadowRadius: 16,
       elevation: 3,
     },
   }) as ViewStyle,
   raised: Platform.select<ViewStyle>({
     default: {
-      shadowColor: '#3A3325',
+      shadowColor: '#22301F',
       shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.14,
+      shadowOpacity: 0.13,
       shadowRadius: 24,
       elevation: 6,
     },

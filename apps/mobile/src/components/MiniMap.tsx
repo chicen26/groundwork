@@ -22,7 +22,7 @@ function page(lat: number, lng: number, zoom: number): string {
 <link rel="stylesheet" href="https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.js"></script>
 <style>
-  html, body, #map { height: 100%; margin: 0; background: #EDE9DF; }
+  html, body, #map { height: 100%; margin: 0; background: #E7EEE2; }
   .pin { width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
          background: #C75B39; border: 2.5px solid #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
 </style>
