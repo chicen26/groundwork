@@ -91,6 +91,7 @@ FHSZ_SRA = LayerSource(
     ),
 )
 
+
 def _title_case(raw: str) -> str:
     """SHOUTING publisher attributes, made readable without mangling hyphenated names."""
     return " ".join(
@@ -176,6 +177,5 @@ WATER_UTILITIES = LayerSource(
 )
 
 SOURCES: dict[str, LayerSource] = {
-    source.key: source
-    for source in (FHSZ_LRA_2025, FHSZ_SRA, FIRE_DISTRICTS, WATER_UTILITIES)
+    source.key: source for source in (FHSZ_LRA_2025, FHSZ_SRA, FIRE_DISTRICTS, WATER_UTILITIES)
 }
