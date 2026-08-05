@@ -124,7 +124,8 @@ async def _owned_scan(conn, scan_id: UUID) -> dict:
     """
     row = await conn.fetchrow(
         """
-        SELECT s.id, s.property_id, s.status::text AS status, p.fhsz::text AS fhsz
+        SELECT s.id, s.property_id, s.status::text AS status, p.fhsz::text AS fhsz,
+               p.state_code
         FROM scans s JOIN properties p ON p.id = s.property_id
         WHERE s.id = $1
         """,
@@ -453,7 +454,7 @@ async def create_assessment(
     async with pool.acquire_as_user(user_id) as conn:
         scan = await _owned_scan(conn, scan_id)
         assessment_id, assessment = await assess_scan(
-            conn, scan_id, rulebook=rulebook, fhsz=scan["fhsz"]
+            conn, scan_id, rulebook=rulebook, fhsz=scan["fhsz"], state=scan["state_code"]
         )
         await conn.execute(
             """

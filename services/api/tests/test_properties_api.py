@@ -35,7 +35,8 @@ async def _arrange(dsn: str) -> UUID:
         version_id = await conn.fetchval(
             """
             INSERT INTO gis_layer_versions (layer, source_url, source_version, is_active)
-            VALUES ('fhsz_lra', 'https://example.test', 'LRA test', true) RETURNING id
+            VALUES ('fhsz_lra', 'https://example.test', 'CAL FIRE FHSZ in LRA, 2025 v1', true)
+            RETURNING id
             """
         )
         await conn.execute(
@@ -85,7 +86,7 @@ def test_creating_a_property_resolves_its_hazard_zone(
     assert body["geo"]["fhsz"] == "very_high"
     assert body["geo"]["fhsz_responsibility"] == "LRA"
     # The zone is a claim about a specific published map, so the map must be named.
-    assert body["geo"]["fhsz_source_version"] == "LRA test"
+    assert body["geo"]["fhsz_source_version"] == "CAL FIRE FHSZ in LRA, 2025 v1"
 
 
 def test_unresolved_layers_are_reported_rather_than_left_blank(

@@ -41,7 +41,8 @@ async def _seed(dsn: str) -> UUID:
         version_id = await conn.fetchval(
             """
             INSERT INTO gis_layer_versions (layer, source_url, source_version, is_active)
-            VALUES ('fhsz_lra', 'https://example.test', 'LRA test', true) RETURNING id
+            VALUES ('fhsz_lra', 'https://example.test', 'CAL FIRE FHSZ in LRA, 2025 v1', true)
+            RETURNING id
             """
         )
         await conn.execute(

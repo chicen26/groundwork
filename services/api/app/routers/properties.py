@@ -42,13 +42,17 @@ class GeoSummary(BaseModel):
     fhsz_source_version: str | None
     fire_district: str | None
     water_utility: str | None
+    state_code: str | None = None
     # Named explicitly so the client can say "we could not determine your fire district" instead of
     # rendering a blank field that reads like "you do not have one".
     unresolved: list[str]
 
     @classmethod
-    def from_resolution(cls, resolution: GeoResolution) -> GeoSummary:
+    def from_resolution(
+        cls, resolution: GeoResolution, state_code: str | None = None
+    ) -> GeoSummary:
         return cls(
+            state_code=state_code,
             fhsz=resolution.fhsz,
             fhsz_responsibility=resolution.fhsz_responsibility,
             fhsz_source_version=resolution.fhsz_source_version,
@@ -83,6 +87,7 @@ async def create_property(payload: PropertyCreate, user_id: CurrentUser) -> Prop
         await ensure_user_row(conn, user_id)
 
         lat, lng, address = payload.lat, payload.lng, payload.address
+        state_code: str | None = None
 
         if lat is None or lng is None:
             try:
@@ -95,19 +100,22 @@ async def create_property(payload: PropertyCreate, user_id: CurrentUser) -> Prop
                     detail=f"could not locate that address ({exc}); place it on the map instead",
                 ) from exc
             lat, lng, address = located.lat, located.lng, located.matched_address
+            state_code = located.state_code
 
         resolution = await resolve_point(conn, lat=lat, lng=lng)
+        # A dropped pin has no address to read a state from, but a CAL FIRE match proves California.
+        state_code = state_code or resolution.implied_state
 
         row = await conn.fetchrow(
             """
             INSERT INTO properties (
                 user_id, label, address, location,
                 fhsz, fhsz_responsibility, fhsz_source_version,
-                fire_district, water_utility, geo_resolved_at
+                fire_district, water_utility, state_code, geo_resolved_at
             )
             VALUES (
                 $1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography,
-                $6::fhsz_class, $7, $8, $9, $10, now()
+                $6::fhsz_class, $7, $8, $9, $10, $11, now()
             )
             RETURNING id
             """,
@@ -121,6 +129,7 @@ async def create_property(payload: PropertyCreate, user_id: CurrentUser) -> Prop
             resolution.fhsz_source_version,
             resolution.fire_district,
             resolution.water_utility,
+            state_code,
         )
 
     return PropertyResponse(
@@ -129,7 +138,7 @@ async def create_property(payload: PropertyCreate, user_id: CurrentUser) -> Prop
         label=payload.label,
         lat=lat,
         lng=lng,
-        geo=GeoSummary.from_resolution(resolution),
+        geo=GeoSummary.from_resolution(resolution, state_code),
     )
 
 
@@ -142,7 +151,7 @@ async def list_properties(user_id: CurrentUser) -> list[PropertyResponse]:
                    ST_Y(location::geometry) AS lat,
                    ST_X(location::geometry) AS lng,
                    fhsz::text AS fhsz, fhsz_responsibility, fhsz_source_version,
-                   fire_district, water_utility
+                   fire_district, water_utility, state_code
             FROM properties
             ORDER BY created_at DESC
             """
@@ -162,7 +171,7 @@ async def get_property(
                    ST_Y(location::geometry) AS lat,
                    ST_X(location::geometry) AS lng,
                    fhsz::text AS fhsz, fhsz_responsibility, fhsz_source_version,
-                   fire_district, water_utility
+                   fire_district, water_utility, state_code
             FROM properties WHERE id = $1
             """,
             property_id,
@@ -189,5 +198,5 @@ def _row_to_response(row) -> PropertyResponse:
         label=row["label"],
         lat=row["lat"],
         lng=row["lng"],
-        geo=GeoSummary.from_resolution(resolution),
+        geo=GeoSummary.from_resolution(resolution, row["state_code"]),
     )

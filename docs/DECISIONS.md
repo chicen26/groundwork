@@ -111,3 +111,26 @@ utilities.
 Every estimate carries the pre-approval warning, because work started before the inspection is
 ineligible no matter how good the finished yard is.
 
+---
+
+### D10 — National advisory base, state law layered on top · Aug 5, 2026
+
+**Decision.** The rulebook holds a nationally-applicable advisory base (IBHS Wildfire Prepared Home,
+NFPA Firewise) that applies in any state, plus statutory rules gated by `applicability.states`.
+Where a state rule covers the same hazard as an advisory one, it declares `supersedes` and the
+advisory version drops out, so nothing is counted twice. Adding a state means adding rules to a JSON
+file.
+
+**Why.** Groundwork's differentiator is that it reconciles *California* law — PRC 4291 and the draft
+Zone 0 — with *California* water rebates. That contradiction does not exist in Texas, and citing
+California code to a Texan would be inventing an obligation. But a homeowner anywhere still has
+gutters full of needles and firewood under a deck, and the IBHS standard genuinely applies to them.
+
+So we do not claim national coverage of the law. We do give every US homeowner a real score, a real
+plan, and real citations from the national base, and we make the state layer a data file rather than
+a rewrite — which is a scaling story we can demonstrate instead of assert.
+
+A property's state comes from the geocoder, or is inferred from the maps that matched: a point
+inside a CAL FIRE layer is in California, because that layer covers nothing else. An undetermined
+state means fewer citations, never a blank screen.
+

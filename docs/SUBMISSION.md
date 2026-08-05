@@ -68,10 +68,10 @@ evacuation) touches the fire-versus-water policy contradiction.
 
 ## What is honest to claim, and what is not
 
-**Can claim:** the only tool that reconciles Zone 0 clearance with lawn-replacement rebates; a self-collected and
+**Can claim:** the only tool that reconciles Zone 0 clearance with lawn-replacement rebates; a usable assessment for a homeowner in any state, from the national advisory base, with the state layer extensible by adding a JSON file; a self-collected and
 self-labeled dataset with a taxonomy written before labeling; a deterministic rules engine with
 published citations; rebate math that is exact and caveated.
 
-**Cannot claim** until it is true: any accuracy number (no model trained yet), that Zone 0 is law
+**Cannot claim** until it is true: that we cover other states' *law* (we hold California's only, and say so in-app); any accuracy number (no model trained yet), that Zone 0 is law
 (it is a draft, and every rule derived from it says so), that the report certifies anything, or that
 any rebate is guaranteed.

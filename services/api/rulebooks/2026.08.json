@@ -1,6 +1,6 @@
 {
   "version": "2026.08",
-  "description": "California defensible-space requirements (PRC 4291), the draft Zone 0 ember-resistant zone pending final adoption, and advisory items from the IBHS Wildfire Prepared Home standard. Every rule cites its source; rules that are not yet law are marked pending_adoption and carry a caveat shown beside the finding.",
+  "description": "A nationally-applicable base of advisory rules from the IBHS Wildfire Prepared Home standard, plus California's statutory requirements (PRC 4291) and the draft Zone 0 ember-resistant zone. Anyone in the United States gets a real assessment from the national base; where a state's law is stricter it supersedes the advisory version, so no hazard is counted twice. Adding another state means adding rules with that state's code in `applicability.states` \u2014 no code changes.",
   "confidence_threshold": 0.5,
   "disclaimer": "Groundwork provides educational guidance based on published state and local requirements. It is not an official inspection, a legal determination, or a guarantee of safety, and it does not provide evacuation guidance. Confirm your obligations with your local fire agency.",
   "rules": [
@@ -14,10 +14,23 @@
       "zone": "5-30ft",
       "severity": "critical",
       "weight": 10,
-      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "applicability": {
+        "fhsz_in": [
+          "moderate",
+          "high",
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
       "triggers": {
-        "hazards": ["dead_vegetation"],
-        "checklist": ["dead_vegetation_present"]
+        "hazards": [
+          "dead_vegetation"
+        ],
+        "checklist": [
+          "dead_vegetation_present"
+        ]
       },
       "action": {
         "title": "Clear dead vegetation within 30 feet of the house",
@@ -25,7 +38,10 @@
         "effort_hours": 4,
         "cost_est_usd": 0,
         "program_key": "diablo_fsc_chipping"
-      }
+      },
+      "supersedes": [
+        "ibhs.dead_vegetation"
+      ]
     },
     {
       "id": "prc4291.roof_debris",
@@ -37,14 +53,30 @@
       "zone": "structure",
       "severity": "critical",
       "weight": 10,
-      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
-      "triggers": { "checklist": ["roof_debris_present"] },
+      "applicability": {
+        "fhsz_in": [
+          "moderate",
+          "high",
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
+      "triggers": {
+        "checklist": [
+          "roof_debris_present"
+        ]
+      },
       "action": {
         "title": "Clear the roof and gutters",
         "detail": "Remove accumulated leaves, needles, and other vegetative debris from the roof surface and gutters.",
         "effort_hours": 2,
         "cost_est_usd": 0
-      }
+      },
+      "supersedes": [
+        "ibhs.roof_debris"
+      ]
     },
     {
       "id": "prc4291.chimney_clearance",
@@ -56,10 +88,23 @@
       "zone": "structure",
       "severity": "high",
       "weight": 7,
-      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
+      "applicability": {
+        "fhsz_in": [
+          "moderate",
+          "high",
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
       "triggers": {
-        "hazards": ["overhanging_limbs"],
-        "checklist": ["limbs_near_chimney"]
+        "hazards": [
+          "overhanging_limbs"
+        ],
+        "checklist": [
+          "limbs_near_chimney"
+        ]
       },
       "action": {
         "title": "Prune limbs within 10 feet of the chimney outlet",
@@ -67,7 +112,10 @@
         "effort_hours": 2,
         "cost_est_usd": 150,
         "program_key": "diablo_fsc_chipping"
-      }
+      },
+      "supersedes": [
+        "ibhs.overhanging_limbs"
+      ]
     },
     {
       "id": "prc4291.z2.fuel_reduction",
@@ -79,15 +127,32 @@
       "zone": "30-100ft",
       "severity": "high",
       "weight": 7,
-      "applicability": { "fhsz_in": ["moderate", "high", "very_high"] },
-      "triggers": { "checklist": ["outer_zone_fuels_dense", "grass_over_four_inches"] },
+      "applicability": {
+        "fhsz_in": [
+          "moderate",
+          "high",
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
+      "triggers": {
+        "checklist": [
+          "outer_zone_fuels_dense",
+          "grass_over_four_inches"
+        ]
+      },
       "action": {
         "title": "Thin and mow the 30-to-100-foot zone",
         "detail": "Cut annual grasses down, create space between shrubs and trees, and remove ladder fuels that let fire climb into tree canopies.",
         "effort_hours": 8,
         "cost_est_usd": 0,
         "program_key": "diablo_fsc_chipping"
-      }
+      },
+      "supersedes": [
+        "ibhs.outer_zone_fuels"
+      ]
     },
     {
       "id": "zone0.combustible_mulch",
@@ -100,17 +165,31 @@
       "severity": "critical",
       "weight": 9,
       "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
-      "applicability": { "fhsz_in": ["very_high"] },
+      "applicability": {
+        "fhsz_in": [
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
       "triggers": {
-        "hazards": ["combustible_mulch_z0"],
-        "checklist": ["combustible_mulch_present"]
+        "hazards": [
+          "combustible_mulch_z0"
+        ],
+        "checklist": [
+          "combustible_mulch_present"
+        ]
       },
       "action": {
         "title": "Replace bark mulch with gravel or stone in the first five feet",
         "detail": "Swap combustible mulch against the house for gravel, decomposed granite, or bare soil.",
         "effort_hours": 5,
         "cost_est_usd": 200
-      }
+      },
+      "supersedes": [
+        "ibhs.zone0_noncombustible"
+      ]
     },
     {
       "id": "zone0.veg_touching_structure",
@@ -123,17 +202,31 @@
       "severity": "critical",
       "weight": 9,
       "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
-      "applicability": { "fhsz_in": ["very_high"] },
+      "applicability": {
+        "fhsz_in": [
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
       "triggers": {
-        "hazards": ["veg_touching_structure"],
-        "checklist": ["vegetation_against_walls"]
+        "hazards": [
+          "veg_touching_structure"
+        ],
+        "checklist": [
+          "vegetation_against_walls"
+        ]
       },
       "action": {
         "title": "Clear vegetation touching the house",
         "detail": "Remove or relocate plants growing against exterior walls, and keep the first five feet free of living and dead vegetation.",
         "effort_hours": 4,
         "cost_est_usd": 0
-      }
+      },
+      "supersedes": [
+        "ibhs.zone0_noncombustible"
+      ]
     },
     {
       "id": "zone0.attached_wood_fence",
@@ -146,17 +239,31 @@
       "severity": "high",
       "weight": 7,
       "caveat": "Zone 0 is a draft regulation and has not been finally adopted. This is what the published draft would require; it is not an obligation today.",
-      "applicability": { "fhsz_in": ["very_high"] },
+      "applicability": {
+        "fhsz_in": [
+          "very_high"
+        ],
+        "states": [
+          "CA"
+        ]
+      },
       "triggers": {
-        "hazards": ["attached_wood_fence"],
-        "checklist": ["wood_fence_attached"]
+        "hazards": [
+          "attached_wood_fence"
+        ],
+        "checklist": [
+          "wood_fence_attached"
+        ]
       },
       "action": {
         "title": "Replace the last five feet of attached fencing with non-combustible material",
         "detail": "Swap the section of wooden fence that meets the house for metal, or install a metal gate as a break.",
         "effort_hours": 4,
         "cost_est_usd": 400
-      }
+      },
+      "supersedes": [
+        "ibhs.fence_not_attached"
+      ]
     },
     {
       "id": "ibhs.combustibles_under_deck",
@@ -170,8 +277,12 @@
       "weight": 7,
       "applicability": {},
       "triggers": {
-        "hazards": ["combustibles_under_deck"],
-        "checklist": ["storage_under_deck"]
+        "hazards": [
+          "combustibles_under_deck"
+        ],
+        "checklist": [
+          "storage_under_deck"
+        ]
       },
       "action": {
         "title": "Clear everything stored under the deck",
@@ -191,7 +302,11 @@
       "severity": "high",
       "weight": 6,
       "applicability": {},
-      "triggers": { "checklist": ["vents_unscreened"] },
+      "triggers": {
+        "checklist": [
+          "vents_unscreened"
+        ]
+      },
       "action": {
         "title": "Fit 1/8-inch metal mesh to vents",
         "detail": "Cover attic and crawlspace vents with 1/8-inch non-combustible metal mesh, or replace them with ember-resistant vents.",
@@ -211,7 +326,11 @@
       "severity": "moderate",
       "weight": 4,
       "applicability": {},
-      "triggers": { "checklist": ["gutters_full"] },
+      "triggers": {
+        "checklist": [
+          "gutters_full"
+        ]
+      },
       "action": {
         "title": "Clear the gutters",
         "detail": "Remove debris from gutters and downspouts, and consider non-combustible gutter covers.",
@@ -230,11 +349,168 @@
       "severity": "moderate",
       "weight": 4,
       "applicability": {},
-      "triggers": { "checklist": ["firewood_near_house"] },
+      "triggers": {
+        "checklist": [
+          "firewood_near_house"
+        ]
+      },
       "action": {
         "title": "Relocate firewood at least 30 feet from structures",
         "detail": "Move stacked firewood and lumber out of the first 30 feet, or store it uphill and away from the house.",
         "effort_hours": 2,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "ibhs.zone0_noncombustible",
+      "title": "Keep the first five feet clear of anything that burns",
+      "rationale": "Embers land at the base of the wall and stay there. The first five feet is the single highest-value thing a homeowner controls.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "0-5ft",
+      "severity": "critical",
+      "weight": 9,
+      "applicability": {},
+      "triggers": {
+        "hazards": [
+          "combustible_mulch_z0",
+          "veg_touching_structure"
+        ],
+        "checklist": [
+          "combustible_mulch_present",
+          "vegetation_against_walls"
+        ]
+      },
+      "action": {
+        "title": "Clear the five feet closest to the house",
+        "detail": "Replace bark mulch with gravel or stone, and remove plants touching the walls.",
+        "effort_hours": 5,
+        "cost_est_usd": 200
+      }
+    },
+    {
+      "id": "ibhs.fence_not_attached",
+      "title": "Do not let a wooden fence meet the house",
+      "rationale": "A fence that touches the wall carries fire to the structure like a fuse.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "0-5ft",
+      "severity": "high",
+      "weight": 6,
+      "applicability": {},
+      "triggers": {
+        "hazards": [
+          "attached_wood_fence"
+        ],
+        "checklist": [
+          "wood_fence_attached"
+        ]
+      },
+      "action": {
+        "title": "Break the fence run with a non-combustible section",
+        "detail": "Replace the last five feet before the wall with metal, or fit a metal gate.",
+        "effort_hours": 4,
+        "cost_est_usd": 400
+      }
+    },
+    {
+      "id": "ibhs.dead_vegetation",
+      "title": "Remove dead vegetation near the house",
+      "rationale": "Dead plants ignite from embers far more readily than living ones.",
+      "citation": "IBHS Wildfire Prepared Home; NFPA Firewise USA",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "5-30ft",
+      "severity": "high",
+      "weight": 7,
+      "applicability": {},
+      "triggers": {
+        "hazards": [
+          "dead_vegetation"
+        ],
+        "checklist": [
+          "dead_vegetation_present"
+        ]
+      },
+      "action": {
+        "title": "Clear dead plants and leaf litter near the house",
+        "detail": "Dead shrubs, dried grass, fallen leaves, and dead branches still on the plant.",
+        "effort_hours": 4,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "ibhs.overhanging_limbs",
+      "title": "Keep limbs off the roof",
+      "rationale": "A branch over the roof puts burning material directly onto it.",
+      "citation": "IBHS Wildfire Prepared Home; NFPA Firewise USA",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "structure",
+      "severity": "high",
+      "weight": 6,
+      "applicability": {},
+      "triggers": {
+        "hazards": [
+          "overhanging_limbs"
+        ],
+        "checklist": [
+          "limbs_near_chimney"
+        ]
+      },
+      "action": {
+        "title": "Prune branches back from the roof and chimney",
+        "detail": "Remove limbs overhanging the roof surface or within ten feet of a chimney outlet.",
+        "effort_hours": 2,
+        "cost_est_usd": 150
+      }
+    },
+    {
+      "id": "ibhs.roof_debris",
+      "title": "Keep the roof clear of debris",
+      "rationale": "A roof holding dry needles is the commonest way an ember becomes a house fire.",
+      "citation": "IBHS Wildfire Prepared Home, base level requirements",
+      "authority": "Insurance Institute for Business and Home Safety",
+      "status": "advisory",
+      "zone": "structure",
+      "severity": "high",
+      "weight": 7,
+      "applicability": {},
+      "triggers": {
+        "checklist": [
+          "roof_debris_present"
+        ]
+      },
+      "action": {
+        "title": "Clear the roof surface",
+        "detail": "Remove leaves, needles, and other vegetative debris, especially in valleys.",
+        "effort_hours": 2,
+        "cost_est_usd": 0
+      }
+    },
+    {
+      "id": "ibhs.outer_zone_fuels",
+      "title": "Break up continuous fuel further out",
+      "rationale": "Space between plants is what stops a fire climbing from the ground into tree canopies.",
+      "citation": "NFPA Firewise USA; IBHS Wildfire Prepared Home",
+      "authority": "National Fire Protection Association",
+      "status": "advisory",
+      "zone": "30-100ft",
+      "severity": "moderate",
+      "weight": 5,
+      "applicability": {},
+      "triggers": {
+        "checklist": [
+          "outer_zone_fuels_dense",
+          "grass_over_four_inches"
+        ]
+      },
+      "action": {
+        "title": "Thin and mow the outer zone",
+        "detail": "Cut grasses down and create space between shrubs and trees.",
+        "effort_hours": 8,
         "cost_est_usd": 0
       }
     }

@@ -41,6 +41,8 @@ class GeocodeResult:
     lat: float
     lng: float
     matched_address: str
+    # Two-letter state code, when the geocoder gave us one. Decides which statutory rules apply.
+    state_code: str | None = None
     cached: bool = False
 
 
@@ -67,11 +69,14 @@ def _request(address: str) -> GeocodeResult:
 
     best = matches[0]
     coordinates = best.get("coordinates", {})
+    components = best.get("addressComponents") or {}
+    state = (components.get("state") or "").strip().upper() or None
     try:
         return GeocodeResult(
             lat=float(coordinates["y"]),
             lng=float(coordinates["x"]),
             matched_address=best.get("matchedAddress", address),
+            state_code=state if state and len(state) == 2 else None,
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise GeocodingUnavailable("geocoder returned an unusable match") from exc
@@ -92,6 +97,7 @@ async def geocode(conn: asyncpg.Connection, address: str) -> GeocodeResult:
             lat=data["lat"],
             lng=data["lng"],
             matched_address=data["matched_address"],
+            state_code=data.get("state_code"),
             cached=True,
         )
 
@@ -109,7 +115,12 @@ async def geocode(conn: asyncpg.Connection, address: str) -> GeocodeResult:
         CACHE_SOURCE,
         key,
         json.dumps(
-            {"lat": result.lat, "lng": result.lng, "matched_address": result.matched_address}
+            {
+                "lat": result.lat,
+                "lng": result.lng,
+                "matched_address": result.matched_address,
+                "state_code": result.state_code,
+            }
         ),
     )
     return result

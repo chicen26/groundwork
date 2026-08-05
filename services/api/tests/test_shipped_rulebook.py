@@ -84,7 +84,7 @@ def test_statutory_rules_do_not_apply_outside_hazard_zones(rulebook) -> None:
 
 
 def test_a_clean_property_in_a_very_high_zone_scores_full_marks(rulebook) -> None:
-    assessment = evaluate(rulebook, fhsz="very_high", evidence=[])
+    assessment = evaluate(rulebook, fhsz="very_high", evidence=[], state="CA")
 
     assert assessment.score == 100
     assert build_plan(assessment) == []
@@ -97,7 +97,7 @@ def test_a_messy_very_high_property_is_led_by_binding_law(rulebook) -> None:
         for hazard in DETECTOR_CLASSES
     ]
 
-    assessment = evaluate(rulebook, fhsz="very_high", evidence=evidence)
+    assessment = evaluate(rulebook, fhsz="very_high", evidence=evidence, state="CA")
     plan = build_plan(assessment)
 
     assert assessment.score < 60
@@ -111,8 +111,8 @@ def test_the_same_yard_is_judged_less_harshly_outside_a_hazard_zone(rulebook) ->
     """Zone 0 and PRC 4291 do not apply in a non-wildland area, so the score should reflect that."""
     evidence = [Evidence(key=hazard, source="model", confidence=0.9) for hazard in DETECTOR_CLASSES]
 
-    very_high = evaluate(rulebook, fhsz="very_high", evidence=evidence)
-    non_wildland = evaluate(rulebook, fhsz="non_wildland", evidence=evidence)
+    very_high = evaluate(rulebook, fhsz="very_high", evidence=evidence, state="CA")
+    non_wildland = evaluate(rulebook, fhsz="non_wildland", evidence=evidence, state="CA")
 
     assert non_wildland.score > very_high.score
 
@@ -131,7 +131,79 @@ def test_an_unknown_zone_still_yields_advisory_guidance(rulebook) -> None:
 
 
 def test_the_disclaimer_travels_with_every_assessment(rulebook) -> None:
-    assessment = evaluate(rulebook, fhsz="very_high", evidence=[])
+    assessment = evaluate(rulebook, fhsz="very_high", evidence=[], state="CA")
 
     assert "not an official inspection" in assessment.disclaimer.lower()
     assert "evacuation" in assessment.disclaimer.lower()
+
+
+# --------------------------------------------------------------------------- jurisdiction
+
+
+def test_a_homeowner_outside_california_still_gets_a_real_assessment(rulebook) -> None:
+    """The national advisory base is the floor. Nobody sees an empty screen because of geography."""
+    evidence = [Evidence(key=h, source="model", confidence=0.9) for h in DETECTOR_CLASSES]
+
+    colorado = evaluate(rulebook, fhsz="unknown", evidence=evidence, state="CO")
+    plan = build_plan(colorado)
+
+    assert colorado.outcomes, "the advisory rules apply in every state"
+    assert colorado.score < 100
+    assert plan, "a failing advisory rule still produces something to do"
+    for item in plan:
+        assert item.citation
+
+
+def test_california_law_does_not_apply_outside_california(rulebook) -> None:
+    """PRC 4291 is California code. Citing it to someone in Texas would be a false obligation."""
+    evidence = [Evidence(key=h, source="model", confidence=0.9) for h in DETECTOR_CLASSES]
+
+    texas = evaluate(rulebook, fhsz="unknown", evidence=evidence, state="TX")
+
+    assert texas.binding_failures == [], "no state statute is in force for a Texas property"
+    assert not [o for o in texas.outcomes if o.rule.id.startswith(("prc4291.", "zone0."))]
+
+
+def test_a_californian_is_not_counted_twice_for_one_hazard(rulebook) -> None:
+    """Both an advisory rule and a stricter state rule cover mulch. Only the stricter one counts."""
+    evidence = [Evidence(key="combustible_mulch_z0", source="model", confidence=0.9)]
+
+    california = evaluate(rulebook, fhsz="very_high", evidence=evidence, state="CA")
+    triggered = [o.rule.id for o in california.failures]
+
+    assert "zone0.combustible_mulch" in triggered
+    assert "ibhs.zone0_noncombustible" not in triggered
+
+
+def test_the_advisory_rule_covers_the_gap_outside_california(rulebook) -> None:
+    """The same mulch is still a finding in Colorado, just advisory rather than statutory."""
+    evidence = [Evidence(key="combustible_mulch_z0", source="model", confidence=0.9)]
+
+    colorado = evaluate(rulebook, fhsz="unknown", evidence=evidence, state="CO")
+    triggered = [o.rule.id for o in colorado.failures]
+
+    assert "ibhs.zone0_noncombustible" in triggered
+
+
+def test_every_detector_class_is_actionable_in_any_state(rulebook) -> None:
+    """A class we detect but no national rule acts on is dead weight outside California."""
+    national = [r for r in rulebook.rules if not r.applicability.states]
+    covered = {hazard for rule in national for hazard in rule.triggers.hazards}
+
+    assert covered >= DETECTOR_CLASSES, f"no national rule for: {DETECTOR_CLASSES - covered}"
+
+
+def test_state_specific_rules_declare_their_state(rulebook) -> None:
+    for rule in rulebook.rules:
+        if rule.id.startswith(("prc4291.", "zone0.")):
+            assert rule.applicability.states == ["CA"], rule.id
+
+
+def test_an_unknown_state_falls_back_to_the_national_base(rulebook) -> None:
+    """A dropped pin we cannot place still yields advice, never a blank result."""
+    evidence = [Evidence(key="dead_vegetation", source="model", confidence=0.9)]
+
+    assessment = evaluate(rulebook, fhsz="unknown", evidence=evidence, state=None)
+
+    assert assessment.outcomes
+    assert assessment.score < 100

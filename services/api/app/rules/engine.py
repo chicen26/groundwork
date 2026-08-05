@@ -146,8 +146,14 @@ def evaluate(
     *,
     fhsz: str,
     evidence: list[Evidence],
+    state: str | None = None,
 ) -> Assessment:
-    """Evaluate a property against a rulebook."""
+    """Evaluate a property against a rulebook.
+
+    `state` decides which statutory rules are in force. Outside a state we hold law for, the
+    nationally-recognised advisory rules still apply, so a homeowner anywhere gets a real score and
+    a real plan — just without the citations that only exist in one state's code.
+    """
     by_key: dict[str, list[Evidence]] = {}
     for item in evidence:
         by_key.setdefault(item.key, []).append(item)
@@ -156,7 +162,7 @@ def evaluate(
     applicable_weight = 0.0
     met_weight = 0.0
 
-    for rule in rulebook.applicable(fhsz):
+    for rule in rulebook.applicable(fhsz, state):
         triggering: list[Evidence] = []
         unconfirmed: list[Evidence] = []
 

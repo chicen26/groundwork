@@ -58,6 +58,16 @@ class GeoResolution:
     water_utility_source_version: str | None = None
 
     @property
+    def implied_state(self) -> str | None:
+        """The state we can infer from which maps matched.
+
+        A point inside a CAL FIRE layer is in California — the layer covers nothing else. That makes
+        the map itself a reliable jurisdiction signal for anyone who dropped a pin instead of typing
+        an address, without a second lookup.
+        """
+        return "CA" if self.fhsz_source_version and "CAL FIRE" in self.fhsz_source_version else None
+
+    @property
     def is_wildland_hazard_zone(self) -> bool:
         """True when the property sits in a designated hazard zone that carries obligations."""
         return self.fhsz in {"moderate", "high", "very_high"}

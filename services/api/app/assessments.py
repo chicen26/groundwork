@@ -59,11 +59,16 @@ async def gather_evidence(conn: asyncpg.Connection, scan_id: UUID) -> list[Evide
 
 
 async def assess_scan(
-    conn: asyncpg.Connection, scan_id: UUID, *, rulebook: Rulebook, fhsz: str
+    conn: asyncpg.Connection,
+    scan_id: UUID,
+    *,
+    rulebook: Rulebook,
+    fhsz: str,
+    state: str | None = None,
 ) -> tuple[UUID, Assessment]:
     """Evaluate a scan and persist the result as a new assessment with its plan."""
     evidence = await gather_evidence(conn, scan_id)
-    assessment = evaluate(rulebook, fhsz=fhsz, evidence=evidence)
+    assessment = evaluate(rulebook, fhsz=fhsz, evidence=evidence, state=state)
 
     assessment_id = await conn.fetchval(
         """

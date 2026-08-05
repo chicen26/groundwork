@@ -56,9 +56,14 @@ class Applicability(BaseModel):
     # Empty means "every property", which is right for advisory items but wrong for statutory ones:
     # PRC 4291 applies in hazard zones, not to a flat lot in a non-wildland area.
     fhsz_in: list[str] = Field(default_factory=list)
+    # Two-letter state codes this rule is law in. Empty means it is not tied to a jurisdiction —
+    # true of recognised standards like IBHS, which are good practice in any state.
+    states: list[str] = Field(default_factory=list)
 
-    def applies_to(self, fhsz: str) -> bool:
-        return not self.fhsz_in or fhsz in self.fhsz_in
+    def applies_to(self, fhsz: str, state: str | None = None) -> bool:
+        if self.fhsz_in and fhsz not in self.fhsz_in:
+            return False
+        return not (self.states and (state or "").upper() not in self.states)
 
 
 class Triggers(BaseModel):
@@ -104,6 +109,9 @@ class Rule(BaseModel):
     action: Action
     # Shown verbatim beside any finding from a rule that is not yet law.
     caveat: str = ""
+    # Rules this one replaces where both would apply. A state requirement supersedes the national
+    # advisory version of the same hazard, so a Californian is not marked down twice for one bush.
+    supersedes: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def pending_rules_must_carry_their_caveat(self) -> Rule:
@@ -127,6 +135,16 @@ class Rulebook(BaseModel):
     rules: list[Rule]
 
     @model_validator(mode="after")
+    def superseded_rules_exist(self) -> Rulebook:
+        """A rule cannot replace one that is not here — that would silently drop coverage."""
+        known = {rule.id for rule in self.rules}
+        for rule in self.rules:
+            missing = [rule_id for rule_id in rule.supersedes if rule_id not in known]
+            if missing:
+                raise ValueError(f"rule {rule.id} supersedes unknown rules: {missing}")
+        return self
+
+    @model_validator(mode="after")
     def rule_ids_are_unique(self) -> Rulebook:
         seen = [rule.id for rule in self.rules]
         duplicates = {rule_id for rule_id in seen if seen.count(rule_id) > 1}
@@ -134,8 +152,16 @@ class Rulebook(BaseModel):
             raise ValueError(f"duplicate rule ids: {sorted(duplicates)}")
         return self
 
-    def applicable(self, fhsz: str) -> list[Rule]:
-        return [rule for rule in self.rules if rule.applicability.applies_to(fhsz)]
+    def applicable(self, fhsz: str, state: str | None = None) -> list[Rule]:
+        """Rules in force for this property, with superseded duplicates removed.
+
+        Order matters to the caller only for readability; the engine sorts its own output. What
+        matters here is that a hazard covered by both a national advisory rule and a stricter state
+        requirement is counted once, under the stricter one.
+        """
+        in_force = [rule for rule in self.rules if rule.applicability.applies_to(fhsz, state)]
+        replaced = {rule_id for rule in in_force for rule_id in rule.supersedes}
+        return [rule for rule in in_force if rule.id not in replaced]
 
     def by_id(self, rule_id: str) -> Rule | None:
         return next((rule for rule in self.rules if rule.id == rule_id), None)
