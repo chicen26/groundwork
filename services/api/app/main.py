@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import pool
 from app.routers import (
+    account,
     health,
     plants,
     properties,
@@ -84,6 +85,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(account.router, prefix=API_PREFIX)
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(properties.router, prefix=API_PREFIX)
     app.include_router(rules.router, prefix=API_PREFIX)

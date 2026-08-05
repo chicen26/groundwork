@@ -82,6 +82,11 @@ cd apps/mobile && npm run typecheck
 
 - [Business requirements (BRD)](docs/BRD.md) — product definition, features, milestones
 - [Decision log](docs/DECISIONS.md) — architectural decisions and their rationale
+- [Submission status](docs/SUBMISSION.md) — what is done, and what is blocked on human work
+- [Demo-day runbook](docs/RUNBOOK.md) — fallbacks, and what breaks looks like
+- [Database](services/api/docs/DATABASE.md) — schema, migrations, and the privacy guarantee
+- [Boundary layers](infra/gis/README.md) — which maps we host and how they are imported
+- [ML pipeline](ml/README.md) · [labeling guide](ml/LABELING_GUIDE.md) · [dataset card](ml/DATASET_CARD.md)
 - [Credits & disclosure](CREDITS.md) — every library, dataset, API, and AI-assisted tool
 
 ## License
