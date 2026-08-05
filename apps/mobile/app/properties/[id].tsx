@@ -43,12 +43,14 @@ export default function PropertyScreen() {
 
   useFocusEffect(load);
 
-  async function startScan() {
+  async function startScan(mode: 'quick' | 'full') {
     if (!property) return;
     setStarting(true);
     try {
+      // Both modes are the same scan underneath — the quick path just goes straight to the
+      // questions, so switching between them later never loses anything already answered.
       const scan = await api.startScan(credentials, property.id);
-      router.push(`/scan/${scan.id}`);
+      router.push(mode === 'quick' ? `/scan/${scan.id}/quick` : `/scan/${scan.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start a scan.');
     } finally {
@@ -109,12 +111,26 @@ export default function PropertyScreen() {
         </Card>
 
         <Card>
-          <Text style={type.heading}>Scan your yard</Text>
+          <Text style={type.heading}>Two minutes, no camera</Text>
           <Text style={styles.body}>
-            Seven photographs and a short set of questions. About ten minutes, and you can stop and
-            pick it up later.
+            Answer a dozen questions about your yard and get a real score and plan — same rulebook,
+            same citations. You can add photographs afterwards.
           </Text>
-          <Button title="Start a scan" onPress={startScan} loading={starting} />
+          <Button title="Quick check" onPress={() => startScan('quick')} loading={starting} />
+        </Card>
+
+        <Card>
+          <Text style={type.heading}>Full scan with photos</Text>
+          <Text style={styles.body}>
+            Seven photographs and the same questions, so our model can flag things you might walk
+            past. About ten minutes, and you can stop and pick it up later.
+          </Text>
+          <Button
+            title="Start a full scan"
+            variant="secondary"
+            onPress={() => startScan('full')}
+            loading={starting}
+          />
         </Card>
 
         <Card>

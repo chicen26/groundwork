@@ -75,6 +75,13 @@ class Dataset:
     @classmethod
     def from_manifest(cls, path: Path) -> Dataset:
         payload = json.loads(Path(path).read_text())
+        # `ml/autolabel.py` writes candidate files with this key. Training on one directly would
+        # mean training on machine proposals nobody agreed to, so it is refused by name.
+        if "candidates" in payload or any("reviewed" in str(k) for k in payload):
+            raise ValueError(
+                "this looks like an unreviewed candidate file; run the review step and export a "
+                "manifest with ml.autolabel.to_manifest first"
+            )
         return cls(
             images=[
                 Image(

@@ -136,6 +136,11 @@ export default function ScanScreen() {
         ) : null}
 
         <Button title="Build my plan" onPress={finish} loading={assessing} />
+        <Button
+          title="Just answer the questions instead"
+          variant="quiet"
+          onPress={() => router.push(`/scan/${scanId}/quick`)}
+        />
         <Text style={styles.note}>
           You can build a plan at any point. Answering more questions and photographing more of the
           yard makes it more complete.

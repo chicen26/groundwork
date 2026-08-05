@@ -18,9 +18,38 @@ The code here is complete and tested. What it is waiting on is photographs — s
 | [`evaluate.py`](evaluate.py) | Held-out metrics, confusion matrix, and a `METRICS.md` we publish. |
 | `tests/` | Guards, chiefly against leakage. Run on every push; need no torch. |
 
+## Two sources, one dataset
+
+The web can supply the common classes in volume. It cannot supply the Zone 0 band — "bark mulch
+against a foundation" and "a wooden fence meeting a wall" are not what anyone photographs for a
+gardening blog, and those two classes are the whole thesis. So the dataset is deliberately hybrid:
+
+| Source | Covers | Effort |
+|---|---|---|
+| `ml/harvest.py` — Openverse + Wikimedia Commons | dead vegetation, overhanging limbs, cluttered decks, clean yards | automated |
+| Our own camera | the Zone 0 classes, and local housing stock | one weekend |
+
+Every harvested image is written with its licence, source URL, and creator, and an image whose
+licence cannot be recorded is skipped — the dataset is going to be published, and one
+unattributable image would make that impossible. Only CC0/PDM/BY/BY-SA are accepted; ND is not,
+because cropping and augmenting for training is a derivative. Google Images and Street View are
+never touched.
+
+`ml/autolabel.py` then pre-draws boxes with an open-vocabulary detector, so a human is correcting
+rather than starting from nothing — roughly forty hours of drawing becomes a few hours of judgement.
+Every proposal is written `reviewed: false`, and both `to_manifest` and `ml/dataset.py` refuse to
+produce a training set while any box is unreviewed. The machine proposes; a person decides; the
+review counts are published so nobody has to take our word for it.
+
 ## The pipeline
 
 ```bash
+# 0. Optional: harvest openly-licensed candidates, then pre-label them.
+python -m ml.harvest --out ml/data/harvested
+pip install -e "ml[autolabel]"
+python -m ml.autolabel --images ml/data/harvested/images --out ml/data/candidates.json
+# ...review every box, then export a manifest...
+
 # 1. Assemble. Validates boxes, splits by property, writes the YOLO layout.
 python -m ml.dataset --manifest ml/data/manifest.json --out ml/data/prepared
 

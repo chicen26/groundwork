@@ -9,6 +9,8 @@ dependencies = []
 
 [project.optional-dependencies]
 train = ["ultralytics>=8.3"]
+# Open-vocabulary pre-labelling. Heavy, and only needed once when preparing a dataset.
+autolabel = ["transformers>=4.45", "torch>=2.4", "pillow>=11.0"]
 dev = ["pytest>=8.3", "ruff>=0.7"]
 
 [build-system]
@@ -16,7 +18,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["dataset", "train", "evaluate"]
+py-modules = ["dataset", "train", "evaluate", "harvest", "autolabel"]
 
 [tool.ruff]
 line-length = 100

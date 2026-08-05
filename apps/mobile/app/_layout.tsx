@@ -29,6 +29,7 @@ export default function RootLayout() {
             name="scan/[scanId]/camera"
             options={{ title: 'Photograph', headerShown: false }}
           />
+          <Stack.Screen name="scan/[scanId]/quick" options={{ title: 'Quick check' }} />
           <Stack.Screen name="scan/[scanId]/checklist" options={{ title: 'A few questions' }} />
           <Stack.Screen name="scan/[scanId]/findings" options={{ title: 'What we spotted' }} />
           <Stack.Screen
