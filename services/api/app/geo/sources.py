@@ -104,6 +104,8 @@ def _title_case(raw: str) -> str:
 # their language for the agencies we have programmes for, and title-cases everything else.
 _DISTRICT_CANONICAL = {
     "SAN RAMON VALLEY FPD": "San Ramon Valley Fire Protection District",
+    # The layer abbreviates "County" to "Co"; resources.json speaks the full name.
+    "CONTRA COSTA CO FPD": "Contra Costa County Fire Protection District",
     "CONTRA COSTA COUNTY FPD": "Contra Costa County Fire Protection District",
     "MORAGA-ORINDA FPD": "Moraga-Orinda Fire District",
 }
