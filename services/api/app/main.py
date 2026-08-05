@@ -11,12 +11,14 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.db import pool
 from app.db.migrate import migrate
 from app.routers import (
     account,
+    geo,
     health,
     plants,
     properties,
@@ -32,6 +34,36 @@ from app.storage import init_storage
 API_PREFIX = "/v1"
 
 logger = logging.getLogger(__name__)
+
+
+class _JsonServerErrors:
+    """Catch what no handler did and answer JSON, leaving the traceback in the log."""
+
+    def __init__(self, app) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        started = False
+
+        async def tracking_send(message) -> None:
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self.app(scope, receive, tracking_send)
+        except Exception:
+            logger.exception("unhandled error serving %s", scope.get("path"))
+            if started:  # headers already sent; nothing coherent left to say
+                raise
+            await JSONResponse({"detail": "internal server error"}, status_code=500)(
+                scope, receive, send
+            )
 
 
 async def _warn_about_pending_migrations(settings) -> None:
@@ -105,6 +137,11 @@ def create_app() -> FastAPI:
         ),
     )
 
+    # Added before CORS so CORS wraps it: an unhandled exception must still produce a response
+    # with CORS headers. Starlette's default 500 is emitted outside every user middleware, so a
+    # browser on another origin reads it as a network failure ("Failed to fetch") instead of a
+    # server error it could report.
+    app.add_middleware(_JsonServerErrors)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -114,6 +151,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(account.router, prefix=API_PREFIX)
+    app.include_router(geo.router, prefix=API_PREFIX)
     app.include_router(health.router)
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(properties.router, prefix=API_PREFIX)

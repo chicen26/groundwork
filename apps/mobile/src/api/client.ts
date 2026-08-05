@@ -8,8 +8,10 @@
  */
 
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 import type {
+  AddressSuggestion,
   AlertStrip,
   Assessment,
   Finding,
@@ -19,14 +21,23 @@ import type {
   Question,
   ScanSummary,
   Station,
+  ZipQuickLook,
 } from './types';
 
 /**
- * Where the backend lives. Configured in app.json so a dev build, a tunnel, and demo day can each
- * point somewhere different without a code change.
+ * Where the backend lives.
+ *
+ * In the browser the answer is derived from the page's own address: whatever host served the app
+ * is the host running the API, so a laptop at localhost and a phone on the LAN both work without
+ * editing config — a hardcoded IP here is exactly how the web build once broke. Native builds
+ * cannot do that trick and read app.json, so a dev build, a tunnel, and demo day can each point
+ * somewhere different without a code change.
  */
 export const API_BASE_URL: string =
-  (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ?? 'http://127.0.0.1:8000';
+  Platform.OS === 'web' && typeof window !== 'undefined'
+    ? ((Constants.expoConfig?.extra?.webApiBaseUrl as string | undefined) ??
+      `${window.location.protocol}//${window.location.hostname}:8000`)
+    : ((Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ?? 'http://127.0.0.1:8000');
 
 export class ApiError extends Error {
   constructor(
@@ -48,6 +59,24 @@ export type Credentials = { userId: string };
 
 function headersFor(credentials: Credentials, extra: Record<string, string> = {}) {
   return { 'X-Groundwork-User': credentials.userId, ...extra };
+}
+
+/**
+ * fetch, with its one useless failure mode translated.
+ *
+ * When the server cannot be reached at all, fetch rejects with the browser's "Failed to fetch" —
+ * words that tell a homeowner nothing. Turn that into a sentence with a next step; every other
+ * error keeps the server's own message via `unwrap`.
+ */
+async function reach(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    throw new ApiError(
+      0,
+      'Could not reach the Groundwork server. Check your connection and try again in a moment.',
+    );
+  }
 }
 
 async function unwrap<T>(response: Response): Promise<T> {
@@ -75,7 +104,7 @@ async function request<T>(
   credentials: Credentials,
   init: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}/v1${path}`, {
+  const response = await reach(`${API_BASE_URL}/v1${path}`, {
     ...init,
     headers: headersFor(credentials, {
       ...(init.body && !(init.body instanceof FormData)
@@ -89,8 +118,28 @@ async function request<T>(
 
 export const api = {
   health(): Promise<{ status: string; rulebook_version: string }> {
-    return fetch(`${API_BASE_URL}/v1/health`).then((r) =>
+    return reach(`${API_BASE_URL}/v1/health`).then((r) =>
       unwrap<{ status: string; rulebook_version: string }>(r),
+    );
+  },
+
+  /**
+   * Address completions while typing. Failure means an empty list — a dropdown that stays closed —
+   * never an error surfaced mid-keystroke.
+   */
+  async suggestAddresses(q: string): Promise<AddressSuggestion[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/geo/suggest?q=${encodeURIComponent(q)}`);
+      return response.ok ? ((await response.json()) as AddressSuggestion[]) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** The rough picture at a ZIP's center point, for people who have not typed an address yet. */
+  zipQuickLook(zip: string): Promise<ZipQuickLook> {
+    return reach(`${API_BASE_URL}/v1/geo/quick-look?zip=${encodeURIComponent(zip)}`).then((r) =>
+      unwrap<ZipQuickLook>(r),
     );
   },
 
@@ -142,7 +191,7 @@ export const api = {
       type: 'image/jpeg',
     } as unknown as Blob);
 
-    const response = await fetch(`${API_BASE_URL}/v1/scans/${scanId}/photos`, {
+    const response = await reach(`${API_BASE_URL}/v1/scans/${scanId}/photos`, {
       method: 'POST',
       headers: headersFor(credentials),
       body: form,

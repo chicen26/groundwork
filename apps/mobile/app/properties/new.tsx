@@ -1,13 +1,15 @@
 /**
  * Adding a property.
  *
- * The address is geocoded server-side. When that fails — the geocoder is down, or the address is
- * new enough not to be in the Census file — the screen says so in the geocoder's own words and
- * offers coordinates instead, rather than dead-ending someone who lives at a real address.
+ * The address field completes as you type; picking a suggestion also pins the coordinates, so the
+ * property can be created even if the geocoder is down. Typing only a ZIP code gets an honest
+ * quick look at the area with a banner pointing at the full-address path. And when server-side
+ * geocoding fails anyway, the screen says so in the geocoder's own words and offers coordinates
+ * instead, rather than dead-ending someone who lives at a real address.
  */
 
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,7 +20,10 @@ import {
 } from 'react-native';
 
 import { ApiError, api } from '@/api/client';
+import type { AddressSuggestion } from '@/api/types';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { Button, Card, ErrorNote, Screen } from '@/components/ui';
+import { ZipQuickLookCard, useZipQuickLook } from '@/components/ZipQuickLook';
 import { useCredentials } from '@/session';
 import { colors, radius, spacing, type } from '@/theme';
 
@@ -28,30 +33,44 @@ export default function NewPropertyScreen() {
 
   const [address, setAddress] = useState('');
   const [label, setLabel] = useState('');
+  const [picked, setPicked] = useState<AddressSuggestion | null>(null);
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [showCoordinates, setShowCoordinates] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Five digits alone is not an address — it is a question we can partly answer right here.
+  const [zip, setZip] = useState<string | null>(null);
+  const trimmed = address.trim();
+  useEffect(() => {
+    const isZip = /^\d{5}$/.test(trimmed);
+    const timer = setTimeout(() => setZip(isZip ? trimmed : null), 400);
+    return () => clearTimeout(timer);
+  }, [trimmed]);
+  const quickLook = useZipQuickLook(zip);
+
   async function save() {
     setSaving(true);
     setError(null);
     try {
-      const coordinates =
+      // Coordinates, by descending trust: ones the user typed, then ones a picked suggestion
+      // carried. Either way the server skips geocoding entirely.
+      const manual =
         showCoordinates && lat.trim() && lng.trim()
           ? { lat: Number(lat), lng: Number(lng) }
           : undefined;
-
-      if (coordinates && (Number.isNaN(coordinates.lat) || Number.isNaN(coordinates.lng))) {
+      if (manual && (Number.isNaN(manual.lat) || Number.isNaN(manual.lng))) {
         setError('Those coordinates are not numbers. Latitude first, then longitude.');
         return;
       }
+      const pinned =
+        picked && picked.label === trimmed ? { lat: picked.lat, lng: picked.lng } : undefined;
 
       const property = await api.createProperty(credentials, {
-        address: address.trim(),
+        address: trimmed,
         label: label.trim() || undefined,
-        ...coordinates,
+        ...(manual ?? pinned),
       });
       router.replace(`/properties/${property.id}`);
     } catch (e) {
@@ -66,6 +85,8 @@ export default function NewPropertyScreen() {
     }
   }
 
+  const zipOnly = zip !== null;
+
   return (
     <Screen>
       <KeyboardAvoidingView
@@ -75,17 +96,21 @@ export default function NewPropertyScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {error ? <ErrorNote message={error} /> : null}
 
-          <Card>
-            <Text style={type.label}>Address</Text>
-            <TextInput
-              style={styles.input}
+          <Card style={styles.addressCard}>
+            <Text style={type.overline}>Where is it?</Text>
+            <Text style={[type.label, styles.spaced]}>Address or ZIP code</Text>
+            <AddressAutocomplete
               value={address}
-              onChangeText={setAddress}
+              onChangeText={(text) => {
+                setAddress(text);
+                if (picked && text.trim() !== picked.label) setPicked(null);
+              }}
+              onSelect={setPicked}
               placeholder="123 Diablo Road, Danville, CA"
-              autoCapitalize="words"
-              autoCorrect={false}
-              returnKeyType="next"
             />
+            <Text style={styles.help}>
+              Start typing and pick your address — or enter just a ZIP for a quick look.
+            </Text>
 
             <Text style={[type.label, styles.spaced]}>Name it (optional)</Text>
             <TextInput
@@ -93,9 +118,18 @@ export default function NewPropertyScreen() {
               value={label}
               onChangeText={setLabel}
               placeholder="Home"
+              placeholderTextColor={colors.textMuted}
               autoCapitalize="words"
             />
           </Card>
+
+          {zipOnly && quickLook.result ? (
+            <ZipQuickLookCard look={quickLook.result} ctaHint="Enter your full address above" />
+          ) : null}
+          {zipOnly && quickLook.loading ? (
+            <Text style={styles.help}>Taking a quick look at {zip}…</Text>
+          ) : null}
+          {zipOnly && quickLook.error ? <Text style={styles.help}>{quickLook.error}</Text> : null}
 
           {showCoordinates ? (
             <Card>
@@ -109,6 +143,7 @@ export default function NewPropertyScreen() {
                 value={lat}
                 onChangeText={setLat}
                 placeholder="Latitude, e.g. 37.8216"
+                placeholderTextColor={colors.textMuted}
                 keyboardType="numbers-and-punctuation"
               />
               <TextInput
@@ -116,6 +151,7 @@ export default function NewPropertyScreen() {
                 value={lng}
                 onChangeText={setLng}
                 placeholder="Longitude, e.g. -121.9999"
+                placeholderTextColor={colors.textMuted}
                 keyboardType="numbers-and-punctuation"
               />
             </Card>
@@ -125,7 +161,7 @@ export default function NewPropertyScreen() {
             title="Look up my zone"
             onPress={save}
             loading={saving}
-            disabled={address.trim().length < 4}
+            disabled={trimmed.length < 4 || zipOnly}
           />
 
           {!showCoordinates ? (
@@ -144,13 +180,15 @@ export default function NewPropertyScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.sm },
+  // The suggestion dropdown overflows this card; without visible overflow it would be clipped.
+  addressCard: { overflow: 'visible', zIndex: 10 },
   input: {
     ...type.body,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
+    paddingVertical: spacing.sm + 6,
     marginTop: spacing.xs,
     backgroundColor: colors.surface,
     color: colors.text,

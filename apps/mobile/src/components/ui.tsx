@@ -10,7 +10,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 
 
 import type { FhszClass, RuleStatus } from '@/api/types';
 import { FHSZ_LABELS } from '@/api/types';
-import { colors, radius, spacing, type } from '@/theme';
+import { colors, radius, shadow, spacing, type } from '@/theme';
 
 export function Screen({ children, style }: { children?: React.ReactNode; style?: ViewStyle }) {
   return <View style={[styles.screen, style]}>{children}</View>;
@@ -102,16 +102,18 @@ export function LegalStatusBadge({ status }: { status: RuleStatus | null }) {
 }
 
 export function ZoneBadge({ fhsz }: { fhsz: FhszClass }) {
-  const tone: Record<FhszClass, string> = {
-    very_high: colors.critical,
-    high: colors.high,
-    moderate: colors.moderate,
-    non_wildland: colors.low,
-    unknown: colors.textMuted,
+  const tone: Record<FhszClass, { fg: string; bg: string }> = {
+    very_high: { fg: colors.critical, bg: '#F9E4E2' },
+    high: { fg: colors.high, bg: '#F8E8DC' },
+    moderate: { fg: colors.moderate, bg: '#F3EBD5' },
+    non_wildland: { fg: colors.low, bg: colors.accentMuted },
+    unknown: { fg: colors.textMuted, bg: colors.surfaceMuted },
   };
+  const { fg, bg } = tone[fhsz];
   return (
-    <View style={[styles.zoneBadge, { borderColor: tone[fhsz] }]}>
-      <Text style={[styles.zoneBadgeText, { color: tone[fhsz] }]}>
+    <View style={[styles.zoneBadge, { backgroundColor: bg }]}>
+      <View style={[styles.zoneDot, { backgroundColor: fg }]} />
+      <Text style={[styles.zoneBadgeText, { color: fg }]}>
         {FHSZ_LABELS[fhsz]} fire hazard zone
       </Text>
     </View>
@@ -154,54 +156,59 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
+    borderRadius: radius.lg,
+    padding: spacing.md + 4,
     marginBottom: spacing.md,
+    ...shadow.card,
   },
   button: {
-    minHeight: 50,
-    borderRadius: radius.md,
+    minHeight: 54,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderWidth: 1,
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1.5,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
   buttonPrimary: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+    ...shadow.raised,
   },
   buttonSecondary: {
     backgroundColor: colors.surface,
+    borderColor: colors.ink,
   },
   buttonQuiet: {
     backgroundColor: 'transparent',
     borderColor: 'transparent',
     minHeight: 40,
   },
-  buttonDisabled: { opacity: 0.5 },
-  buttonPressed: { opacity: 0.8 },
-  buttonText: { ...type.label, color: colors.text },
+  buttonDisabled: { opacity: 0.45 },
+  buttonPressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
+  buttonText: { ...type.label, fontSize: 16, color: colors.ink },
   buttonTextPrimary: { color: colors.textInverse },
   buttonTextQuiet: { color: colors.textMuted },
   badge: {
     alignSelf: 'flex-start',
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 3,
-  },
-  badgeText: { fontSize: 12, fontWeight: '700' },
-  zoneBadge: {
-    alignSelf: 'flex-start',
-    borderRadius: radius.pill,
-    borderWidth: 1.5,
-    paddingHorizontal: spacing.sm + 2,
+    paddingHorizontal: spacing.sm + 4,
     paddingVertical: 4,
   },
-  zoneBadgeText: { fontSize: 13, fontWeight: '700' },
+  badgeText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.2 },
+  zoneBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    gap: 6,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: 5,
+  },
+  zoneDot: { width: 8, height: 8, borderRadius: 4 },
+  zoneBadgeText: { fontSize: 13, fontWeight: '700', flexShrink: 1 },
   centred: {
     flex: 1,
     alignItems: 'center',
@@ -210,7 +217,9 @@ const styles = StyleSheet.create({
   },
   mutedText: { ...type.caption, color: colors.textMuted },
   errorNote: {
-    backgroundColor: '#FDECEA',
+    backgroundColor: '#FBEAE7',
+    borderLeftWidth: 4,
+    borderLeftColor: colors.critical,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.sm,

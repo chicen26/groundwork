@@ -1,33 +1,65 @@
 /**
  * Visual language.
  *
- * Two things drive the palette. Hazard severity has to read at a glance in bright sun, standing in
- * a yard — so those colours are saturated and high-contrast. Everything else stays quiet, because a
- * screen that shouts at a homeowner about their house is unpleasant to use and easy to distrust.
+ * The palette is drawn from the product's own subject: evergreen for the plan, ember for fire,
+ * river-teal for water, on warm paper. Hazard severity still has to read at a glance in bright
+ * sun, standing in a yard — those colours stay saturated and high-contrast — while everything
+ * else is calm, deep, and warm, because a screen that shouts at a homeowner about their house is
+ * unpleasant to use and easy to distrust.
+ *
+ * Type is the brand: Fraunces, a warm soft serif, for anything display-sized — it reads like a
+ * seed catalogue, not a dashboard — with the system sans for body text, where legibility on a
+ * phone in a yard beats character. Custom families carry their own weight, so the display styles
+ * set no fontWeight (Android would fake one badly).
  */
 
-export const colors = {
-  background: '#FBFAF7',
-  surface: '#FFFFFF',
-  surfaceMuted: '#F1EFEA',
-  border: '#E0DCD3',
+import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 
-  text: '#1C1B18',
-  textMuted: '#5F5C55',
-  textInverse: '#FFFFFF',
+export const fonts = {
+  display: 'Fraunces_600SemiBold',
+  displayBold: 'Fraunces_700Bold',
+  displayBlack: 'Fraunces_900Black',
+} as const;
+
+export const colors = {
+  background: '#F6F3EC',
+  surface: '#FFFFFF',
+  surfaceMuted: '#EDE9DF',
+  border: '#E2DDD0',
+
+  text: '#1A2119',
+  textMuted: '#68705F',
+  textInverse: '#F8F6F0',
+
+  // The brand family: deep evergreen ink, a brighter leaf for accents on dark, warm ember, water.
+  ink: '#22311F',
+  inkDeep: '#16220F',
+  leaf: '#9DC183',
+  ember: '#C75B39',
+  emberMuted: '#F7E4DA',
+
+  // The dark hero surface and everything that has to read on it.
+  heroTop: '#131F0E',
+  heroBottom: '#2A3D20',
+  cream: '#F5F1E6',
+  creamMuted: 'rgba(245, 241, 230, 0.68)',
+  creamFaint: 'rgba(245, 241, 230, 0.14)',
+  emberBright: '#E2794E',
+  waterBright: '#8FC3CE',
 
   // Fire severity. Reads in sunlight, and stays distinguishable to the most common forms of colour
   // blindness by pairing hue with a label — never colour alone.
   critical: '#B3261E',
-  high: '#C5691B',
+  high: '#C05621',
   moderate: '#8A6D1F',
   low: '#4A6B3A',
 
   // Water and rebate affordances, deliberately a different family from the fire palette.
-  water: '#1F5F73',
+  water: '#1F6273',
+  waterMuted: '#E0EEF1',
 
-  accent: '#2C5F2D',
-  accentMuted: '#E3EDE1',
+  accent: '#2F5233',
+  accentMuted: '#E4EDE0',
 
   // Draft regulations get their own treatment so "not law yet" is visible, not buried in a caption.
   draft: '#5B5391',
@@ -44,19 +76,51 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 6,
-  md: 12,
-  lg: 20,
+  sm: 10,
+  md: 16,
+  lg: 24,
   pill: 999,
 } as const;
 
 export const type = {
-  display: { fontSize: 34, fontWeight: '700' as const, letterSpacing: -0.5 },
-  title: { fontSize: 24, fontWeight: '700' as const, letterSpacing: -0.3 },
-  heading: { fontSize: 18, fontWeight: '600' as const },
-  body: { fontSize: 16, fontWeight: '400' as const, lineHeight: 23 },
+  display: { fontSize: 42, fontFamily: fonts.display, letterSpacing: -0.8, lineHeight: 48 },
+  title: { fontSize: 27, fontFamily: fonts.display, letterSpacing: -0.4, lineHeight: 33 },
+  heading: { fontSize: 19, fontFamily: fonts.display, letterSpacing: -0.1, lineHeight: 25 },
+  body: { fontSize: 16, fontWeight: '400' as const, lineHeight: 24 },
   label: { fontSize: 14, fontWeight: '600' as const },
   caption: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 },
+  // Small-caps section markers: the quiet way to structure a screen without drawing boxes.
+  overline: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase' as const,
+  },
+} as const satisfies Record<string, TextStyle>;
+
+/**
+ * Elevation. One soft, warm shadow — never a hard grey web-default — and `elevation` for Android.
+ * On web the same tokens render via boxShadow, which react-native-web synthesises from these.
+ */
+export const shadow = {
+  card: Platform.select<ViewStyle>({
+    default: {
+      shadowColor: '#3A3325',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.08,
+      shadowRadius: 16,
+      elevation: 3,
+    },
+  }) as ViewStyle,
+  raised: Platform.select<ViewStyle>({
+    default: {
+      shadowColor: '#3A3325',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.14,
+      shadowRadius: 24,
+      elevation: 6,
+    },
+  }) as ViewStyle,
 } as const;
 
 export function severityColor(severity: string | null | undefined): string {

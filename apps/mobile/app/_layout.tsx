@@ -1,11 +1,25 @@
+import {
+  Fraunces_600SemiBold,
+  Fraunces_700Bold,
+  Fraunces_900Black,
+  useFonts,
+} from '@expo-google-fonts/fraunces';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider } from '@/session';
-import { colors } from '@/theme';
+import { colors, fonts } from '@/theme';
 
 export default function RootLayout() {
+  // The serif is the brand; a flash of system font would look like a different product loading.
+  const [fontsLoaded] = useFonts({
+    Fraunces_600SemiBold,
+    Fraunces_700Bold,
+    Fraunces_900Black,
+  });
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaProvider>
       <SessionProvider>
@@ -14,7 +28,7 @@ export default function RootLayout() {
           screenOptions={{
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
-            headerTitleStyle: { fontWeight: '700' },
+            headerTitleStyle: { fontFamily: fonts.display, fontSize: 19 },
             headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.background },
           }}

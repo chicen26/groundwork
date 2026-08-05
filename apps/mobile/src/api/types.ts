@@ -30,6 +30,28 @@ export interface GeoSummary {
   unresolved: string[];
 }
 
+/** One line in the address dropdown. Selecting it supplies both the text and the pin. */
+export interface AddressSuggestion {
+  label: string;
+  lat: number;
+  lng: number;
+}
+
+/** What a ZIP alone can tell you. Always approximate, and the UI must say so. */
+export interface ZipQuickLook {
+  zip: string;
+  place: string | null;
+  state_code: string | null;
+  lat: number;
+  lng: number;
+  fhsz: FhszClass;
+  fhsz_source_version: string | null;
+  fire_district: string | null;
+  water_utility: string | null;
+  unresolved: string[];
+  approximate: boolean;
+}
+
 export interface Property {
   id: string;
   address: string;
