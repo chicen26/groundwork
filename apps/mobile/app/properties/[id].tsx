@@ -1,9 +1,10 @@
 /**
  * A property: what the published maps say about it, and the way into a scan.
  *
- * Every resolved answer names the map it came from, and anything we could not determine says so
- * plainly. A blank field would read as "you do not have a fire district"; "we could not determine
- * this" is the truth.
+ * One narrow column with room to breathe — a pin on a map, the zone on the state's scale, then
+ * four quiet doors. Every resolved answer names the map it came from, and anything we could not
+ * determine says so plainly: a blank field would read as "you do not have a fire district";
+ * "we could not determine this" is the truth.
  */
 
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,9 +14,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api } from '@/api/client';
 import type { Property } from '@/api/types';
 import { AlertStrip } from '@/components/AlertStrip';
-import { Button, Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
+import { AmbientBackground } from '@/components/AmbientBackground';
+import { MiniMap } from '@/components/MiniMap';
+import { RiskMeter } from '@/components/RiskMeter';
+import { Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/components/ui';
 import { useCredentials } from '@/session';
-import { colors, spacing, type } from '@/theme';
+import { colors, radius, spacing, type } from '@/theme';
 
 const UNRESOLVED_LABELS: Record<string, string> = {
   fhsz: 'fire hazard zone',
@@ -71,6 +75,7 @@ export default function PropertyScreen() {
 
   return (
     <Screen>
+      <AmbientBackground />
       <Stack.Screen
         options={{
           headerRight: () => (
@@ -82,11 +87,15 @@ export default function PropertyScreen() {
       />
       <ScrollView contentContainerStyle={styles.content}>
         <AlertStrip lat={property.lat} lng={property.lng} />
+
         <Text style={type.title}>{property.label ?? property.address}</Text>
         {property.label ? <Text style={styles.muted}>{property.address}</Text> : null}
 
-        <Card>
+        <MiniMap lat={property.lat} lng={property.lng} zoom={15} height={170} />
+
+        <Card style={styles.zoneCard}>
           <ZoneBadge fhsz={geo.fhsz} />
+          <RiskMeter fhsz={geo.fhsz} />
           {geo.fhsz_source_version ? (
             <Text style={styles.source}>
               {geo.fhsz_responsibility === 'LRA' ? 'Local' : 'State'} responsibility area ·{' '}
@@ -119,71 +128,107 @@ export default function PropertyScreen() {
           ) : null}
         </Card>
 
-        <Card>
-          <Text style={type.heading}>Two minutes, no camera</Text>
-          <Text style={styles.body}>
-            Answer a dozen questions about your yard and get a real score and plan — same rulebook,
-            same citations. You can add photographs afterwards.
-          </Text>
-          <Button title="Quick check" onPress={() => startScan('quick')} loading={starting} />
-        </Card>
+        <Text style={[type.overline, styles.sectionOverline]}>Where to next</Text>
 
-        <Card>
-          <Text style={type.heading}>Full scan with photos</Text>
-          <Text style={styles.body}>
-            Seven photographs and the same questions, so our model can flag things you might walk
-            past. About ten minutes, and you can stop and pick it up later.
-          </Text>
-          <Button
-            title="Start a full scan"
-            variant="secondary"
-            onPress={() => startScan('full')}
-            loading={starting}
-          />
-        </Card>
-
-        <Card>
-          <Text style={type.heading}>What is your lawn worth?</Text>
-          <Text style={styles.body}>
-            Outline the lawn on a satellite view and we will measure it and work out what your water
-            utility pays to replace it.
-          </Text>
-          <Button
-            title="Measure a lawn"
-            variant="secondary"
-            onPress={() => router.push(`/properties/${property.id}/lawn`)}
-          />
-        </Card>
-
-        <Card>
-          <Text style={type.heading}>Local programmes</Text>
-          <Text style={styles.body}>
-            Chipping, cost-share, and inspections from agencies near you.
-          </Text>
-          <Button
-            title="See what is available"
-            variant="secondary"
-            onPress={() => router.push(`/properties/${property.id}/resources`)}
-          />
-        </Card>
+        <ActionRow
+          icon="⚡"
+          tint={colors.accentMuted}
+          title="Quick check"
+          sub="Two minutes, no camera. Same rulebook, same citations."
+          onPress={() => startScan('quick')}
+          disabled={starting}
+          emphasized
+        />
+        <ActionRow
+          icon="📷"
+          tint={colors.emberMuted}
+          title="Full scan with photos"
+          sub="Seven photographs so the model can flag what you might walk past."
+          onPress={() => startScan('full')}
+          disabled={starting}
+        />
+        <ActionRow
+          icon="💧"
+          tint={colors.waterMuted}
+          title="What is your lawn worth?"
+          sub="Outline it on a satellite view; we measure and price the rebate."
+          onPress={() => router.push(`/properties/${property.id}/lawn`)}
+        />
+        <ActionRow
+          icon="🌱"
+          tint={colors.surfaceMuted}
+          title="Local programmes"
+          sub="Chipping, cost-share, and inspections from agencies near you."
+          onPress={() => router.push(`/properties/${property.id}/resources`)}
+        />
       </ScrollView>
     </Screen>
   );
 }
 
+function ActionRow({
+  icon,
+  tint,
+  title,
+  sub,
+  onPress,
+  disabled,
+  emphasized,
+}: {
+  icon: string;
+  tint: string;
+  title: string;
+  sub: string;
+  onPress: () => void;
+  disabled?: boolean;
+  emphasized?: boolean;
+}) {
+  return (
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button">
+      {({ pressed }) => (
+        <View
+          style={[
+            styles.action,
+            emphasized && styles.actionEmphasized,
+            pressed && styles.actionPressed,
+            disabled && styles.actionDisabled,
+          ]}
+        >
+          <View style={[styles.actionIcon, { backgroundColor: tint }]}>
+            <Text style={styles.actionIconText}>{icon}</Text>
+          </View>
+          <View style={styles.actionBody}>
+            <Text style={[type.heading, emphasized && styles.actionTitleEmphasized]}>{title}</Text>
+            <Text style={[styles.actionSub, emphasized && styles.actionSubEmphasized]}>{sub}</Text>
+          </View>
+          <Text style={[styles.chevron, emphasized && styles.actionTitleEmphasized]}>›</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg },
+  content: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
+    maxWidth: 620,
+    width: '100%',
+    alignSelf: 'center',
+  },
   padded: { padding: spacing.lg },
-  muted: { ...type.body, color: colors.textMuted, marginBottom: spacing.md },
+  muted: { ...type.body, color: colors.textMuted, marginTop: -spacing.sm },
   body: { ...type.body, color: colors.textMuted, marginVertical: spacing.sm },
-  source: { ...type.caption, color: colors.textMuted, marginTop: spacing.sm },
+  source: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
+  zoneCard: { gap: spacing.sm, marginBottom: 0 },
   factRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
+    gap: spacing.md,
+    paddingVertical: spacing.sm + 2,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: spacing.sm,
+    borderTopColor: colors.surfaceMuted,
   },
   factLabel: { ...type.caption, color: colors.textMuted },
   factValue: {
@@ -192,6 +237,36 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     textAlign: 'right',
   },
-  caveat: { ...type.caption, color: colors.textMuted, marginTop: spacing.md },
+  caveat: { ...type.caption, color: colors.textMuted },
   editLink: { ...type.label, color: colors.accent },
+  sectionOverline: { color: colors.textMuted, marginTop: spacing.md },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  actionEmphasized: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+  },
+  actionPressed: { opacity: 0.85 },
+  actionDisabled: { opacity: 0.5 },
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionIconText: { fontSize: 20 },
+  actionBody: { flex: 1, gap: 2 },
+  actionTitleEmphasized: { color: colors.textInverse },
+  actionSub: { ...type.caption, color: colors.textMuted },
+  actionSubEmphasized: { color: colors.creamMuted },
+  chevron: { fontSize: 26, color: colors.textMuted, fontWeight: '300' },
 });

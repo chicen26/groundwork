@@ -30,9 +30,10 @@ import { Button, Card, ErrorNote, Loading, Screen, ZoneBadge } from '@/component
 import { ZipQuickLookCard, useZipQuickLook } from '@/components/ZipQuickLook';
 import { newUserId, useSession } from '@/session';
 import { colors, fonts, radius, shadow, spacing, type } from '@/theme';
+import { currentSeason } from '@/theme/season';
 
 export default function HomeScreen() {
-  const { credentials, loading: sessionLoading, signIn } = useSession();
+  const { credentials, loading: sessionLoading, signIn, accountsEnabled } = useSession();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +56,11 @@ export default function HomeScreen() {
   if (sessionLoading) return <Loading />;
 
   if (!credentials) {
-    return <Welcome onStart={() => signIn(newUserId())} />;
+    // With accounts configured, the way in is a real sign-in; without them, one tap starts a
+    // device-local session — a gate with nothing behind it would just cost testers.
+    return (
+      <Welcome onStart={() => (accountsEnabled ? router.push('/signin') : signIn(newUserId()))} />
+    );
   }
 
   if (error) {
@@ -167,13 +172,15 @@ function Welcome({ onStart }: { onStart: () => void }) {
     transform: [{ translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }],
   };
 
+  const season = currentSeason();
+
   return (
     <Screen>
       {/* The hero carries the wordmark itself; a header saying it again would just repeat it. */}
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.welcomeScroll}>
         <LinearGradient
-          colors={[colors.heroTop, colors.heroBottom]}
+          colors={season.heroColors}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={styles.hero}
@@ -205,6 +212,12 @@ function Welcome({ onStart }: { onStart: () => void }) {
               <HeroChip icon="💧" label="Lawn rebates" />
               <HeroChip icon="🧾" label="One ranked plan" />
             </View>
+
+            {season.badge ? (
+              <View style={styles.seasonBadge}>
+                <Text style={styles.seasonBadgeText}>{season.badge}</Text>
+              </View>
+            ) : null}
           </Animated.View>
         </LinearGradient>
 
@@ -342,6 +355,16 @@ const styles = StyleSheet.create({
   },
   chipIcon: { fontSize: 13 },
   chipLabel: { ...type.label, color: colors.cream, fontSize: 13 },
+  seasonBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(226, 121, 78, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 121, 78, 0.45)',
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+  },
+  seasonBadgeText: { ...type.caption, color: colors.emberBright, fontWeight: '600' },
   welcomeBody: {
     padding: spacing.lg,
     paddingTop: 0,

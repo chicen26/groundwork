@@ -34,6 +34,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" options={{ title: 'Groundwork' }} />
+          <Stack.Screen name="signin" options={{ title: 'Your account' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="properties/new" options={{ title: 'Add a property' }} />
           <Stack.Screen name="properties/[id]" options={{ title: 'Property' }} />

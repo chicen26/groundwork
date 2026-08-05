@@ -91,16 +91,91 @@ FHSZ_SRA = LayerSource(
     ),
 )
 
-# --- Not yet verified -------------------------------------------------------------------------
-#
-# Fire district and water utility boundaries are published per-county and per-agency rather than by
-# one authority, and Contra Costa's district polygons are not in its public ArcGIS folders. Until a
-# source is confirmed, resolution returns "not determined" for these rather than a plausible guess:
-# telling someone the wrong fire district sends them to the wrong agency for an inspection.
-#
-# Open research item, tracked in the verify-before-launch register:
-#   * SRVFPD / Con Fire / MOFD / ACFD service-area polygons
-#   * EBMUD / CCWD / DSRSD service-area polygons, including the split cities (Walnut Creek and
-#     San Ramon are each served by two utilities, so a city-name lookup is not good enough)
+def _title_case(raw: str) -> str:
+    """SHOUTING publisher attributes, made readable without mangling hyphenated names."""
+    return " ".join(
+        "-".join(part.capitalize() for part in word.split("-")) for word in raw.lower().split()
+    )
 
-SOURCES: dict[str, LayerSource] = {source.key: source for source in (FHSZ_LRA_2025, FHSZ_SRA)}
+
+# Names the rest of the product already keys on. `resources.json` matches districts by these
+# exact names, and `rebates.json` matches utilities by agency code — so the importer speaks
+# their language for the agencies we have programmes for, and title-cases everything else.
+_DISTRICT_CANONICAL = {
+    "SAN RAMON VALLEY FPD": "San Ramon Valley Fire Protection District",
+    "CONTRA COSTA COUNTY FPD": "Contra Costa County Fire Protection District",
+    "MORAGA-ORINDA FPD": "Moraga-Orinda Fire District",
+}
+
+_UTILITY_CANONICAL = {
+    "EAST BAY MUD": "EBMUD",
+    "EAST BAY MUNICIPAL UTILITY DISTRICT": "EBMUD",
+    "CONTRA COSTA WATER DISTRICT": "CCWD",
+    "DUBLIN SAN RAMON SERVICES DISTRICT": "DSRSD",
+}
+
+
+def _district_name(attributes: dict[str, Any]) -> str:
+    raw = (attributes.get("Name") or "").strip()
+    if raw.upper() in _DISTRICT_CANONICAL:
+        return _DISTRICT_CANONICAL[raw.upper()]
+    name = _title_case(raw)
+    # Expand the abbreviation the layer uses so screens read like an agency, not a code.
+    if name.endswith(" Fpd"):
+        name = name[:-4] + " Fire Protection District"
+    elif name.endswith(" Fd"):
+        name = name[:-3] + " Fire District"
+    return name
+
+
+def _utility_name(attributes: dict[str, Any]) -> str:
+    raw = (attributes.get("WATER_SYSTEM_NAME") or "").strip()
+    return _UTILITY_CANONICAL.get(raw.upper(), _title_case(raw))
+
+
+FIRE_DISTRICTS = LayerSource(
+    key="fire_districts",
+    table="fire_districts",
+    url=f"{CALFIRE_ORG}/California_Local_Fire_Districts/FeatureServer/0",
+    source_version="CAL FIRE Local Fire Districts, 2026 v1",
+    out_fields=("Name", "FDID", "County"),
+    attributes=lambda a: {
+        "name": _district_name(a),
+        "agency_code": (a.get("FDID") or None),
+    },
+    notes=(
+        "CAL FIRE's statewide compilation of local fire district boundaries, updated yearly "
+        "against the State Fire Marshal's FDID register. Verified Aug 5, 2026: Danville centre "
+        "resolves to San Ramon Valley FPD (FDID 07035)."
+    ),
+    # District polygons are county-sized and vertex-heavy; smaller pages keep each request
+    # comfortably inside the service's timeout.
+    extra={"page_size": 50},
+)
+
+WATER_UTILITIES = LayerSource(
+    key="water_utilities",
+    table="water_utilities",
+    url=(
+        "https://gispublic.waterboards.ca.gov/portalserver/rest/services/Drinking_Water/"
+        "California_Drinking_Water_System_Area_Boundaries/FeatureServer/0"
+    ),
+    source_version="SWRCB Drinking Water System Area Boundaries (SABL), 2026",
+    out_fields=("WATER_SYSTEM_NAME", "SABL_PWSID", "BOUNDARY_TYPE"),
+    attributes=lambda a: {
+        "name": _utility_name(a),
+        "utility_code": (a.get("SABL_PWSID") or None),
+    },
+    notes=(
+        "The State Water Board's verified service-area polygons — the same authority the rebate "
+        "question needs, since the utility decides rates and caps. Water Service Area boundaries "
+        "only: jurisdictional boundaries overstate who a system actually serves. Verified "
+        "Aug 5, 2026: Danville centre resolves to EBMUD (CA0110005)."
+    ),
+    extra={"where": "BOUNDARY_TYPE = 'Water Service Area'", "page_size": 100},
+)
+
+SOURCES: dict[str, LayerSource] = {
+    source.key: source
+    for source in (FHSZ_LRA_2025, FHSZ_SRA, FIRE_DISTRICTS, WATER_UTILITIES)
+}

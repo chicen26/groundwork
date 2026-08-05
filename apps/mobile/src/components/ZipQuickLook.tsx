@@ -13,6 +13,7 @@ import { Animated, StyleSheet, Text, View } from 'react-native';
 import { api } from '@/api/client';
 import type { FhszClass, ZipQuickLook } from '@/api/types';
 import { AlertStrip } from '@/components/AlertStrip';
+import { MiniMap } from '@/components/MiniMap';
 import { RiskMeter } from '@/components/RiskMeter';
 import { ZoneBadge } from '@/components/ui';
 import { colors, radius, spacing, type } from '@/theme';
@@ -93,6 +94,8 @@ export function ZipQuickLookCard({
     >
       <Text style={type.overline}>Quick look · ZIP {look.zip}</Text>
       {place ? <Text style={styles.place}>{place}</Text> : null}
+
+      <MiniMap lat={look.lat} lng={look.lng} />
 
       <View style={styles.badgeRow}>
         <ZoneBadge fhsz={look.fhsz} />

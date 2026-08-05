@@ -26,6 +26,8 @@ Non-Wildland.
 |---|---|---|
 | `fhsz_lra` | CAL FIRE, FHSZ in LRA 2025 v1 (`FHSALRA25_v1_All`) | Verified Aug 4, 2026 — 420 features in the corridor |
 | `fhsz_sra` | CAL FIRE, FHSZ in SRA 2023 v3 (`FHSZSRA_23_3`) | Verified Aug 4, 2026 — 344 features in the corridor |
+| `fire_districts` | CAL FIRE, California Local Fire Districts (`California_Local_Fire_Districts`) | Verified Aug 5, 2026 — 671 features statewide; Danville resolves San Ramon Valley FPD (FDID 07035) |
+| `water_utilities` | SWRCB, Drinking Water System Area Boundaries (SABL), Water Service Area polygons only | Verified Aug 5, 2026 — 4,953 features statewide; Danville resolves EBMUD (CA0110005) |
 
 Verification means the imported copy was spot-checked against the live service at known
 coordinates:
@@ -41,25 +43,27 @@ coordinates:
 Where the two maps overlap, the local (LRA) designation governs; the state layer is the fallback
 for unincorporated land.
 
-## Not yet sourced
+## District and utility boundaries: sourced
 
-**Fire district and water utility boundaries.** These are published per-county and per-agency
-rather than by one authority, and Contra Costa's district polygons are not in its public ArcGIS
-folders (the `ConFire` folder is permission-restricted).
+The gap this section used to describe is closed. Two statewide authorities publish exactly what
+the per-county search never found:
 
-Until a source is confirmed, `resolve_point` returns `None` for these and the API reports them in
-`unresolved`, so the client can say "we could not determine your fire district" rather than render
-a blank field that reads like "you do not have one". Guessing would be worse than a gap: naming the
-wrong district sends someone to the wrong agency for an inspection.
+- **Fire districts** — CAL FIRE's *California Local Fire Districts* compilation (updated yearly
+  against the State Fire Marshal's FDID register), hosted in the same ArcGIS org as the FHSZ
+  layers.
+- **Water utilities** — the State Water Board's *Drinking Water System Area Boundaries* (SABL).
+  We import **Water Service Area** polygons only; jurisdictional boundaries overstate who a
+  system actually serves. This satisfies the split-city requirement: Walnut Creek and San Ramon
+  resolve to the utility that actually serves the point, not a city-name guess.
 
-Still to find:
+Names are canonicalised at import (`_DISTRICT_CANONICAL`, `_UTILITY_CANONICAL` in
+`app/geo/sources.py`) so `resources.json` district matching and `rebates.json` agency matching
+keep working: the CAL FIRE layer says "SAN RAMON VALLEY FPD", the resources file says
+"San Ramon Valley Fire Protection District", and SABL says "EAST BAY MUD" where the rebate
+programme says "EBMUD".
 
-- SRVFPD / Con Fire / MOFD / ACFD service-area polygons
-- EBMUD / CCWD / DSRSD service-area polygons. City-name lookup is **not** an acceptable substitute:
-  Walnut Creek and San Ramon are each split between two utilities, and the utility decides which
-  rebate rates and caps apply.
-
-Adding either means adding a `LayerSource` entry to `app/geo/sources.py` — the importer is generic.
+A point outside every polygon still resolves to `None` and is reported in `unresolved` — the
+honest gap survives; it is just much rarer now.
 
 ## Re-verification
 

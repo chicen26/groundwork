@@ -42,8 +42,9 @@ class ImportError_(RuntimeError):
 
 
 def _fetch_page(source: LayerSource, offset: int, bbox: tuple[float, float, float, float]) -> dict:
+    page_size = source.extra.get("page_size", PAGE_SIZE)
     query = {
-        "where": "1=1",
+        "where": source.extra.get("where", "1=1"),
         "outFields": ",".join(source.out_fields),
         "geometry": ",".join(str(v) for v in bbox),
         "geometryType": "esriGeometryEnvelope",
@@ -51,7 +52,7 @@ def _fetch_page(source: LayerSource, offset: int, bbox: tuple[float, float, floa
         "outSR": "4326",
         "spatialRel": "esriSpatialRelIntersects",
         "resultOffset": str(offset),
-        "resultRecordCount": str(PAGE_SIZE),
+        "resultRecordCount": str(page_size),
         "f": "geojson",
     }
     url = f"{source.url}/query?{urllib.parse.urlencode(query)}"
@@ -76,6 +77,7 @@ def fetch_features(
     """Page through a feature service until it stops handing back features."""
     features: list[dict[str, Any]] = []
     offset = 0
+    page_size = source.extra.get("page_size", PAGE_SIZE)
 
     while True:
         payload = _fetch_page(source, offset, bbox)
@@ -89,9 +91,9 @@ def fetch_features(
             "exceededTransferLimit"
         ):
             break
-        if len(page) < PAGE_SIZE:
+        if len(page) < page_size:
             break
-        offset += PAGE_SIZE
+        offset += page_size
 
     return features
 

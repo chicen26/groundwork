@@ -54,11 +54,16 @@ export class ApiError extends Error {
   }
 }
 
-/** Identity header. Replaced by a Supabase bearer token once auth is wired up. */
-export type Credentials = { userId: string };
+/**
+ * How identity is carried: a Supabase bearer token when accounts are configured, or the
+ * development header the backend accepts until they are. Screens never see the difference.
+ */
+export type Credentials = { userId: string; token?: string };
 
 function headersFor(credentials: Credentials, extra: Record<string, string> = {}) {
-  return { 'X-Groundwork-User': credentials.userId, ...extra };
+  return credentials.token
+    ? { Authorization: `Bearer ${credentials.token}`, ...extra }
+    : { 'X-Groundwork-User': credentials.userId, ...extra };
 }
 
 /**

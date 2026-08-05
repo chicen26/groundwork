@@ -17,7 +17,7 @@ import { colors, radius, spacing, type } from '@/theme';
 
 export default function SettingsScreen() {
   const credentials = useCredentials();
-  const { signOut } = useSession();
+  const { signOut, email, accountsEnabled } = useSession();
   const router = useRouter();
 
   const [confirm, setConfirm] = useState('');
@@ -45,6 +45,16 @@ export default function SettingsScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         {error ? <ErrorNote message={error} /> : null}
+
+        <Card>
+          <Text style={type.heading}>Account</Text>
+          <Text style={styles.body}>
+            {email ??
+              (accountsEnabled
+                ? 'Signed in.'
+                : 'A private account on this device — no email, nothing shared.')}
+          </Text>
+        </Card>
 
         <PrivacyNote />
 
