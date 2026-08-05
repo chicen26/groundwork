@@ -80,12 +80,15 @@ and cap. A visible gap is honest and fixable; a confident wrong answer is neithe
 
 ---
 
-### D8 — Tokens are verified locally; the dev header fails closed · Aug 4, 2026
+### D8 — Tokens are verified locally against a public JWKS · Aug 4, 2026, revised Aug 5
 
-**Decision.** Supabase issues JWTs and we verify them ourselves. A development-only
-`X-Groundwork-User` header exists, and is refused whenever the environment is production or a JWT
-secret is configured. A bearer token presented while no secret is configured returns 503 rather than
-being accepted.
+**Decision.** Supabase issues JWTs and we verify them ourselves, against the project's **public**
+JWKS (ES256) rather than a shared secret. The service therefore holds no secret capable of minting a
+token. Algorithms are allowlisted to ES256/RS256, and issuer and audience are both checked. A
+development-only `X-Groundwork-User` header exists and is refused whenever the environment is
+production or auth is configured. A bearer token presented while auth is unconfigured returns 503
+rather than being accepted, and a JWKS fetch failure returns 503 rather than 401 — telling someone
+their credentials are wrong when our own fetch failed is a lie.
 
 **Why.** Building the scan flow should not require a Supabase project, but a convenience header that
 could survive into a deployment is a hole. Both failure modes resolve toward refusing access.

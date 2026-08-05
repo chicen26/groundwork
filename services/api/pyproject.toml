@@ -12,7 +12,8 @@ dependencies = [
     # Explicit CA bundle: the stdlib falls back to whatever the host has, which on macOS python.org
     # builds is nothing. Layer imports must not depend on how Python was installed.
     "certifi>=2024.8.30",
-    "pyjwt>=2.9",
+    # ES256 verification of Supabase tokens needs the crypto backend.
+    "pyjwt[crypto]>=2.9",
     # Image decoding for EXIF stripping on upload.
     "pillow>=11.0",
     # FastAPI needs this to parse multipart photo uploads.

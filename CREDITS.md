@@ -18,7 +18,7 @@ dependencies are added.
 | Ruff | Backend lint + format | MIT |
 | asyncpg | Postgres driver | Apache-2.0 |
 | PostGIS | Spatial types and point-in-polygon queries | GPL-2.0 (server-side; not linked into our code) |
-| PyJWT | Verifying Supabase-issued tokens | MIT |
+| PyJWT (with cryptography) | Verifying Supabase-issued ES256 tokens against their public JWKS | MIT / Apache-2.0 |
 | certifi | CA bundle for outbound HTTPS | MPL-2.0 |
 | Pillow | Image decoding and EXIF stripping | MIT-CMU |
 | Ultralytics YOLO11 | Architecture we fine-tune; training and inference runtime | AGPL-3.0 |

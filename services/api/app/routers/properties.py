@@ -67,9 +67,21 @@ class PropertyResponse(BaseModel):
     geo: GeoSummary
 
 
+async def ensure_user_row(conn, user_id: UUID) -> None:
+    """Make sure the signed-in user has a row for foreign keys to point at.
+
+    Supabase owns identity; this is a mirror created on first use. Doing it here rather than on
+    every authenticated request keeps the cost on the one call that actually needs it, and
+    ON CONFLICT makes it safe to race with itself.
+    """
+    await conn.execute("INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING", user_id)
+
+
 @router.post("", response_model=PropertyResponse, status_code=status.HTTP_201_CREATED)
 async def create_property(payload: PropertyCreate, user_id: CurrentUser) -> PropertyResponse:
     async with pool.acquire_as_user(user_id) as conn:
+        await ensure_user_row(conn, user_id)
+
         lat, lng, address = payload.lat, payload.lng, payload.address
 
         if lat is None or lng is None:
